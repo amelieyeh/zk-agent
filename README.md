@@ -4,7 +4,7 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 
 ## Features
 
-- **ZK Classification**: Claude Haiku classifies notes as Fleeting, Literature, or Permanent
+- **ZK Classification**: LLM classifies notes as Fleeting, Literature, or Permanent
 - **Smart Routing**: Fleeting → journal, Literature/Permanent → cards (reduces noise)
 - **Auto Metadata**: Generates title and tags in the same language as the input
 - **Smart Linking**: Searches existing Heptabase notes for related content
@@ -42,7 +42,7 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
    ```
    Tokens are stored at `~/.zk-agent/tokens/heptabase.json`.
 
-   > If you already have [Hermes Agent](https://github.com/NousResearch/hermes-agent) with Heptabase configured, ZK Agent auto-detects your existing tokens — no setup needed.
+   > If you already have [Hermes Agent](https://github.com/NousResearch/hermes-agent) with Heptabase configured, ZK Agent can auto-detect your existing tokens.
 
 ### Usage
 
@@ -82,8 +82,8 @@ $ python scripts/zk_agent.py "也許可以用 webhook 做即時通知？要研�
 
 ```
 Input text
-  → Classifier (Claude Haiku) → fleeting / literature / permanent
-  → Metadata Generator (Claude Haiku) → title + tags
+  → Classifier (LLM) → fleeting / literature / permanent
+  → Metadata Generator (LLM) → title + tags
   → Router:
       Fleeting → append to Heptabase journal (## 🧠 ZK Fleeting Notes)
       Literature/Permanent → Linker (semantic search) → save as Heptabase card
@@ -92,7 +92,7 @@ Input text
 Auto-detect mode:
 ```
 Conversation text
-  → Detector (Claude Haiku) → 0-5 insight candidates
+  → Detector (LLM) → 0-5 insight candidates
   → User approves/rejects each
   → Approved insights → save pipeline
 ```

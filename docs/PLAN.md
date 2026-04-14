@@ -4,22 +4,22 @@
 
 AI agent that automatically identifies valuable insights from conversations and saves them as Zettelkasten notes to Heptabase.
 
-**Runtime:** Python 3.11+ with Anthropic SDK + MCP SDK
-**Classification:** Claude Haiku via Anthropic API
-**Storage:** Heptabase official MCP (`https://api.heptabase.com/mcp`)
-**Publish target:** agentskills.io
+**Runtime:** Python 3.11+ with OpenAI-compatible SDK + MCP SDK
+**Classification:** Any LLM via OpenAI-compatible API (default: Claude Haiku)
+**Storage:** Heptabase official MCP (`https://api.heptabase.com/mcp`), more destinations planned
+**Publish target:** PyPI + agentskills.io
 
 ## Architecture
 
 ```
 User input (conversation snippet / insight)
     ↓
-ZK Classification Engine (Claude Haiku API)
+ZK Classification Engine (LLM API — any OpenAI-compatible provider)
     ├── Fleeting Note → journal only (under dedicated section)
     ├── Literature Note → Heptabase card
     └── Permanent Note → Heptabase card
     ↓
-Metadata Generator (Claude Haiku API)
+Metadata Generator (LLM API)
     ├── Title (auto-generated, same language as input)
     └── Tags (3-5, lowercase)
     ↓
@@ -36,16 +36,15 @@ Auto-detect flow (Phase 2):
 ```
 Conversation text
     ↓
-Insight Detector (Claude Haiku API)
+Insight Detector (LLM API)
     → 0-5 candidates with suggested type + reason
     → User selects which to save
     → Each approved insight runs through the save pipeline
 ```
 
 Key decisions:
-- **Bypass Hermes chat** — connect to Heptabase MCP directly via Python MCP SDK
-- **Hermes used only for OAuth** — tokens persist at `~/.hermes/mcp-tokens/heptabase.json`
-- **Anthropic SDK for classification** — Claude Haiku, fast and cheap
+- **Self-contained OAuth** — built-in OAuth flow, no external dependencies. Tokens at `~/.zk-agent/tokens/`
+- **Any LLM provider** — unified `llm.py` interface via OpenAI-compatible SDK (OpenAI, Anthropic, OpenRouter, Ollama)
 - **Fleeting → journal, not card** — reduces card volume, fleeting notes live in daily journal under dedicated section
 - **No Heptabase tag API** — MCP doesn't expose tag management, note type indicated in card metadata text
 
@@ -57,9 +56,9 @@ Manual trigger mode: user provides text, agent classifies + saves.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| T1 | Hermes + Heptabase MCP setup | ✅ | OAuth via Hermes, direct MCP SDK connection |
-| T2 | `classifier.py` — ZK classification via Claude Haiku | ✅ | 100% accuracy on 5 fixtures |
-| T3 | `metadata_generator.py` — title + tags generation | ✅ | Claude Haiku, same-language titles |
+| T1 | Heptabase MCP setup + self-contained OAuth | ✅ | `zk-agent setup` triggers browser OAuth |
+| T2 | `classifier.py` — ZK classification via LLM | ✅ | 100% accuracy on 5 fixtures |
+| T3 | `metadata_generator.py` — title + tags generation | ✅ | Same-language titles via LLM |
 | T4 | `linker.py` — semantic search for related notes | ✅ | Uses Heptabase `semantic_search_objects` |
 | T5 | `zk_agent.py` — full pipeline | ✅ | Fleeting → journal, lit/perm → card |
 | T6 | Note templates | ✅ | Markdown format, h1 title, source as clickable link |
@@ -74,24 +73,30 @@ Scan conversations for insights worth saving, present candidates for approval.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| D1 | `detector.py` — scan conversation for ZK-worthy insights | ✅ | Claude Haiku, returns 0-5 candidates |
+| D1 | `detector.py` — scan conversation for ZK-worthy insights | ✅ | LLM-powered, returns 0-5 candidates |
 | D2 | `/zk` Claude Code command — manual save | ✅ | Works in any session |
 | D3 | `/zk-scan` Claude Code command — batch scan + select | ✅ | Scan conversation, approve/reject each |
-| D4 | `/wrap-up` integration — auto-scan at end of day | Pending | |
+| D4 | `/wrap-up` integration — auto-scan at end of day | ✅ | Step 5 in wrap-up flow |
+| D5 | Multi-provider LLM support | ✅ | `llm.py` — OpenAI, Anthropic, OpenRouter, Ollama |
 
-### Phase 3 — Multi-destination (future)
+### Phase 3 — Multi-destination (planned)
 
 Support Obsidian, Notion, local markdown in addition to Heptabase.
 
+Priority from research:
+1. **Obsidian** — local `.md` files, no API needed, highest ZK user overlap
+2. **Notion** — mature REST API + official MCP, largest user base (30M)
+3. **Logseq** — local Markdown, high ZK community overlap
+
 ## Key Technical Decisions
 
-### Classifier: Claude Haiku API (not rules)
+### Classifier: LLM API (not rules)
 
-ZK note types have fuzzy boundaries that need semantic understanding. Haiku is fast and cheap. The prompt lives in `classifier.py` and can be tuned without changing architecture.
+ZK note types have fuzzy boundaries that need semantic understanding. Any OpenAI-compatible LLM works. The prompt lives in `classifier.py` and can be tuned without changing architecture. Provider configured via `.env`.
 
 ### MCP: Direct Python SDK connection
 
-Hermes chat has an OpenRouter encoding bug, so we bypass it entirely. The Python MCP SDK connects directly to Heptabase using OAuth tokens that Hermes manages. This is simpler and more reliable.
+The Python MCP SDK connects directly to Heptabase using self-managed OAuth tokens. No external agent framework required.
 
 ### Note routing: fleeting → journal, literature/permanent → card
 
