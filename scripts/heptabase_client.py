@@ -80,3 +80,14 @@ async def append_journal(content: str) -> str:
                 "append_to_journal", {"content": content}
             )
             return result.content[0].text
+
+
+async def get_journal_today(date: str) -> str:
+    """Read today's journal content. Date format: YYYY-MM-DD."""
+    async with await _get_session() as (read, write, _):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            result = await session.call_tool(
+                "get_journal_range", {"startDate": date, "endDate": date}
+            )
+            return result.content[0].text
