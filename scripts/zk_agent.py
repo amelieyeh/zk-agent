@@ -2,31 +2,29 @@
 ZK Agent — Main entry point.
 
 Orchestrates the full flow:
-  input → classify → metadata → link → format → save to Heptabase → journal
+  input → classify → metadata → link → format → save to storage
 """
 
 import asyncio
 import sys
-from pathlib import Path
 
 from env import load_env
 load_env()
 
 from classifier import classify_note
 from metadata_generator import generate_metadata, NoteMetadata
-from linker import find_related_notes
-from journal import log_fleeting_to_journal
-from heptabase_client import save_note_card
+from storage import get_storage
 
 
 def _format_card(text: str, metadata: NoteMetadata) -> str:
-    """Format note as Markdown card for Heptabase.
+    """Format note as Markdown card.
 
-    Heptabase save_to_note_card expects Markdown where:
-    - First line must be h1 (# Title) → becomes card title
+    Format:
+    - First line is h1 (# Title) — used as card title by Heptabase,
+      and as filename by Obsidian
     - Blocks separated by blank lines
     - Source rendered as clickable Markdown link
-    - Used for literature/permanent notes only (fleeting → journal)
+    - Used for literature/permanent notes only (fleeting → journal/daily note)
     """
     tags_str = ", ".join(f"#{t}" for t in metadata["tags"])
     related_str = "\n".join(
@@ -58,32 +56,32 @@ def _format_card(text: str, metadata: NoteMetadata) -> str:
 
 async def save_note(text: str, source: str | None = None) -> dict:
     """Full ZK save pipeline."""
-    # Step 1: Classify note type (sync — Claude API call)
+    store = get_storage()
+
+    # Step 1: Classify note type
     classification = classify_note(text)
 
-    # Step 2: Generate metadata (sync — Claude API call)
+    # Step 2: Generate metadata (title, tags)
     metadata = generate_metadata(text, classification, source=source)
 
     # Step 3: Route by note type
     if classification["note_type"] == "fleeting":
-        # Fleeting → journal only, no card
-        journal_ok = await log_fleeting_to_journal(
-            text, metadata["title"], metadata["tags"]
-        )
+        # Fleeting → daily note / journal
+        ok = await store.save_fleeting(text, metadata["title"], metadata["tags"])
         return {
             "classification": dict(classification),
             "metadata": dict(metadata),
             "related": [],
             "saved": None,
-            "journal": journal_ok,
+            "journal": ok,
         }
 
-    # Literature/Permanent → card + related notes, no journal
-    related = await find_related_notes(text)
+    # Literature/Permanent → card + related notes
+    related = await store.search_related(text)
     metadata["related_notes"] = [r["title"] for r in related]
 
     card_md = _format_card(text, metadata)
-    save_result = await save_note_card(card_md)
+    save_result = await store.save_card(metadata["title"], card_md)
 
     return {
         "classification": dict(classification),
@@ -102,7 +100,7 @@ def main():
 
     if len(sys.argv) < 2:
         print("Usage:")
-        print("  python zk_agent.py setup                  — Authorize Heptabase")
+        print("  python zk_agent.py setup                   — Authorize note storage")
         print("  python zk_agent.py <text> [--source <url>] — Save an insight")
         sys.exit(1)
 
