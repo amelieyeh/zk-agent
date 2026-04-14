@@ -102,7 +102,6 @@ scripts/
   journal.py            — Fleeting notes to journal
   detector.py           — Conversation insight scanner
   env.py                — .env file loader
-templates/              — Note format templates
 tests/                  — 8 tests (classifier 5/5 + detector 2/2)
 ```
 

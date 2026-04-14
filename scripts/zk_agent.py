@@ -22,7 +22,11 @@ from heptabase_client import save_note_card
 def _format_card(text: str, metadata: NoteMetadata) -> str:
     """Format note as Markdown card for Heptabase.
 
-    First line is # title (becomes card title in Heptabase).
+    Heptabase save_to_note_card expects Markdown where:
+    - First line must be h1 (# Title) → becomes card title
+    - Blocks separated by blank lines
+    - Source rendered as clickable Markdown link
+    - Used for literature/permanent notes only (fleeting → journal)
     """
     tags_str = ", ".join(f"#{t}" for t in metadata["tags"])
     related_str = "\n".join(
