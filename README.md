@@ -5,9 +5,11 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 ## Features
 
 - **ZK Classification**: Claude Haiku classifies notes as Fleeting, Literature, or Permanent
+- **Smart Routing**: Fleeting → journal, Literature/Permanent → cards (reduces noise)
 - **Auto Metadata**: Generates title and tags in the same language as the input
 - **Smart Linking**: Searches existing Heptabase notes for related content
-- **Heptabase Integration**: Saves cards + journal entries via MCP
+- **Conversation Scanner**: Auto-detect insights worth saving from any conversation
+- **Claude Code Integration**: `/zk` and `/zk-scan` commands for seamless workflow
 - **Multi-language**: Works with Chinese, English, or mixed-language input
 
 ## Quick Start
@@ -38,23 +40,35 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 ### Usage
 
 ```bash
-# Save an insight
+# Save an insight (auto-classifies and routes)
 python scripts/zk_agent.py "Your insight text here"
 
-# With source attribution
+# With source attribution (renders as clickable link in Heptabase)
 python scripts/zk_agent.py "Insight from article" --source "https://example.com/article"
 ```
 
-### Example
+If using Claude Code, the `/zk` and `/zk-scan` commands provide a more integrated experience.
 
+### Examples
+
+**Permanent note → card:**
 ```
-$ python scripts/zk_agent.py "The essence of CSS is translation — turning design into reality. MCP tool design is also translation — turning APIs into user flows."
+$ python scripts/zk_agent.py "好的 API 設計像好的翻譯——讓使用者不需要理解底層複雜性，就能完成目標。"
 
-✅ Saved as permanent note
-   Title: Translation as Core Skill: Design and API to UX
-   Tags: #translation, #design, #api, #core_competency, #user_experience
-   Confidence: 92%
-   Journal: ✓
+✅ Saved as permanent note → card
+   Title: 好的 API 設計像翻譯——隱藏複雜性
+   Tags: #api design, #user experience, #abstraction
+   Confidence: 85%
+```
+
+**Fleeting note → journal:**
+```
+$ python scripts/zk_agent.py "也許可以用 webhook 做即時通知？要研究一下"
+
+📝 Fleeting note → journal
+   Title: 研究 webhook 實現即時通知機制
+   Tags: #webhook, #real-time notification
+   Confidence: 95%
 ```
 
 ## Architecture
@@ -63,30 +77,40 @@ $ python scripts/zk_agent.py "The essence of CSS is translation — turning desi
 Input text
   → Classifier (Claude Haiku) → fleeting / literature / permanent
   → Metadata Generator (Claude Haiku) → title + tags
-  → Linker (Heptabase MCP) → related notes
-  → Save (Heptabase MCP) → note card + journal entry
+  → Router:
+      Fleeting → append to Heptabase journal (## 🧠 ZK Fleeting Notes)
+      Literature/Permanent → Linker (semantic search) → save as Heptabase card
+```
+
+Auto-detect mode:
+```
+Conversation text
+  → Detector (Claude Haiku) → 0-5 insight candidates
+  → User approves/rejects each
+  → Approved insights → save pipeline
 ```
 
 ## Project Structure
 
 ```
 scripts/
-  zk_agent.py          — Main pipeline entry point
-  classifier.py        — ZK note type classification
+  zk_agent.py           — Main pipeline (classify → route → save)
+  classifier.py         — ZK note type classification
   metadata_generator.py — Title + tags generation
-  heptabase_client.py  — Direct MCP SDK client for Heptabase
-  linker.py            — Semantic search for related notes
-  journal.py           — Daily journal logging
-  env.py               — .env file loader
-templates/             — Note format templates
-tests/                 — Classifier accuracy tests (5 fixtures, 100% pass)
+  heptabase_client.py   — Direct MCP SDK client for Heptabase
+  linker.py             — Semantic search for related notes
+  journal.py            — Fleeting notes to journal
+  detector.py           — Conversation insight scanner
+  env.py                — .env file loader
+templates/              — Note format templates
+tests/                  — 8 tests (classifier 5/5 + detector 2/2)
 ```
 
 ## Status
 
-**Phase 1 — MVP**: ✅ Complete (classify + save + journal working end-to-end)
+**Phase 1 — MVP**: ✅ Complete
 
-**Phase 2 — Auto-detect**: Planned (agent proactively suggests saving insights)
+**Phase 2 — Auto-detect**: ✅ Core complete (detector + `/zk-scan` command)
 
 **Phase 3 — Multi-destination**: Planned (Obsidian, Notion, local markdown)
 
