@@ -66,8 +66,10 @@ async def save_note(text: str, source: str | None = None) -> dict:
 
     # Step 3: Route by note type
     if classification["note_type"] == "fleeting":
-        # Fleeting → daily note / journal
-        ok = await store.save_fleeting(metadata["title"], text, metadata["tags"])
+        if store:
+            ok = await store.save_fleeting(metadata["title"], text, metadata["tags"])
+        else:
+            ok = False
         return {
             "classification": dict(classification),
             "metadata": dict(metadata),
@@ -77,11 +79,15 @@ async def save_note(text: str, source: str | None = None) -> dict:
         }
 
     # Literature/Permanent → card + related notes
-    related = await store.search_related(text)
+    related = await store.search_related(text) if store else []
     metadata["related_notes"] = [r["title"] for r in related]
 
     card_md = _format_card(text, metadata)
-    save_result = await store.save_card(metadata["title"], card_md)
+
+    if store:
+        save_result = await store.save_card(metadata["title"], card_md)
+    else:
+        save_result = None
 
     return {
         "classification": dict(classification),
@@ -89,6 +95,7 @@ async def save_note(text: str, source: str | None = None) -> dict:
         "related": related,
         "saved": save_result,
         "fleeting_saved": False,
+        "content_md": card_md,
     }
 
 
@@ -115,16 +122,23 @@ def main():
     result = asyncio.run(save_note(text, source=source))
 
     note_type = result['classification']['note_type']
+    has_storage = result.get("saved") is not None or result.get("fleeting_saved")
+
     if note_type == "fleeting":
-        print(f"\n📝 Fleeting note → daily note")
+        print(f"\n📝 Fleeting note{' → saved' if has_storage else ''}")
     else:
-        print(f"\n✅ Saved as {note_type} note → card")
+        print(f"\n{'✅ Saved' if has_storage else '📋 Classified'} as {note_type} note")
     print(f"   Title: {result['metadata']['title']}")
     print(f"   Tags: {', '.join(f'#{t}' for t in result['metadata']['tags'])}")
     print(f"   Confidence: {result['classification']['confidence']:.0%}")
     print(f"   Reasoning: {result['classification']['reasoning']}")
     if result["related"]:
         print(f"   Related: {', '.join(r['title'] for r in result['related'])}")
+
+    # Output Markdown when no storage backend is configured
+    if not has_storage and result.get("content_md"):
+        print(f"\n--- Markdown output ---\n")
+        print(result["content_md"])
 
 
 if __name__ == "__main__":

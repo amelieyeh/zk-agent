@@ -2,8 +2,9 @@
 Storage — unified interface for saving notes to any destination.
 
 Configuration via .env:
-  STORAGE=heptabase          (default)
-  STORAGE=obsidian
+  STORAGE=heptabase          — save via Heptabase MCP
+  STORAGE=obsidian           — save as local .md files
+  (not set)                  — output only, no saving
 
 Each backend implements: save_card(), save_fleeting(), search_related()
 """
@@ -28,7 +29,7 @@ class NoteStorage(Protocol):
         ...
 
     async def save_fleeting(self, title: str, text: str, tags: list[str]) -> bool:
-        """Save a fleeting note (journal/daily note, not a standalone card).
+        """Save a fleeting note (daily note, not a standalone card).
 
         Args:
             title: Short title
@@ -49,9 +50,15 @@ class NoteStorage(Protocol):
         ...
 
 
-def get_storage() -> NoteStorage:
-    """Get the configured storage backend from STORAGE env var."""
-    backend = os.environ.get("STORAGE", "heptabase").lower()
+def get_storage() -> NoteStorage | None:
+    """Get the configured storage backend from STORAGE env var.
+
+    Returns None if STORAGE is not set — caller should output Markdown only.
+    """
+    backend = os.environ.get("STORAGE", "").lower()
+
+    if not backend:
+        return None
 
     if backend == "heptabase":
         from storage_heptabase import HeptabaseStorage
