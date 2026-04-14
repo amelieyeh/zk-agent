@@ -15,7 +15,7 @@ load_env()
 from classifier import classify_note
 from metadata_generator import generate_metadata, NoteMetadata
 from linker import find_related_notes
-from journal import log_to_journal
+from journal import log_fleeting_to_journal
 from heptabase_client import save_note_card
 
 
@@ -60,23 +60,33 @@ async def save_note(text: str, source: str | None = None) -> dict:
     # Step 2: Generate metadata (sync — Claude API call)
     metadata = generate_metadata(text, classification, source=source)
 
-    # Step 3: Search for related notes (async — Heptabase MCP)
+    # Step 3: Route by note type
+    if classification["note_type"] == "fleeting":
+        # Fleeting → journal only, no card
+        journal_ok = await log_fleeting_to_journal(
+            text, metadata["title"], metadata["tags"]
+        )
+        return {
+            "classification": dict(classification),
+            "metadata": dict(metadata),
+            "related": [],
+            "saved": None,
+            "journal": journal_ok,
+        }
+
+    # Literature/Permanent → card + related notes, no journal
     related = await find_related_notes(text)
     metadata["related_notes"] = [r["title"] for r in related]
 
-    # Step 4: Format and save to Heptabase (async — Heptabase MCP)
     card_md = _format_card(text, metadata)
     save_result = await save_note_card(card_md)
-
-    # Step 5: Log to daily journal (async — Heptabase MCP)
-    journal_ok = await log_to_journal(metadata)
 
     return {
         "classification": dict(classification),
         "metadata": dict(metadata),
         "related": related,
         "saved": save_result,
-        "journal": journal_ok,
+        "journal": False,
     }
 
 
@@ -95,14 +105,17 @@ def main():
     text = " ".join(args)
     result = asyncio.run(save_note(text, source=source))
 
-    print(f"\n✅ Saved as {result['classification']['note_type']} note")
+    note_type = result['classification']['note_type']
+    if note_type == "fleeting":
+        print(f"\n📝 Fleeting note → journal")
+    else:
+        print(f"\n✅ Saved as {note_type} note → card")
     print(f"   Title: {result['metadata']['title']}")
     print(f"   Tags: {', '.join(f'#{t}' for t in result['metadata']['tags'])}")
     print(f"   Confidence: {result['classification']['confidence']:.0%}")
     print(f"   Reasoning: {result['classification']['reasoning']}")
     if result["related"]:
         print(f"   Related: {', '.join(r['title'] for r in result['related'])}")
-    print(f"   Journal: {'✓' if result['journal'] else '✗'}")
 
 
 if __name__ == "__main__":

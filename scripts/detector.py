@@ -50,5 +50,9 @@ def detect_insights(conversation: str) -> list[InsightCandidate]:
     if raw.startswith("```"):
         raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
 
+    # Claude sometimes appends explanation after the JSON array
+    bracket_end = raw.rfind("]")
+    if bracket_end != -1:
+        raw = raw[: bracket_end + 1]
     candidates = json.loads(raw)
     return [InsightCandidate(**c) for c in candidates]
