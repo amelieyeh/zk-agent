@@ -27,7 +27,8 @@ def _format_card(text: str, metadata: NoteMetadata) -> str:
     - Source rendered as clickable Markdown link
     - Used for literature/permanent notes only (fleeting → daily note)
     """
-    tags_str = ", ".join(f"#{t}" for t in metadata["tags"])
+    all_tags = [metadata["note_type"]] + list(metadata["tags"])
+    tags_str = ", ".join(f"#{t}" for t in all_tags)
     related_str = "\n".join(
         f"- {r}" for r in metadata["related_notes"]
     ) or "None yet"

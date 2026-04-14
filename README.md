@@ -5,7 +5,7 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 ## Features
 
 - **ZK Classification**: LLM classifies notes as Fleeting, Literature, or Permanent
-- **Smart Routing**: Fleeting → daily note, Literature/Permanent → cards
+- **Smart Routing**: Fleeting → daily note, Literature/Permanent → cards (auto-tagged `#fleeting`, `#literature`, `#permanent`)
 - **Multi-destination**: Heptabase, Obsidian
 - **Any LLM Provider**: OpenAI, Anthropic, OpenRouter, Ollama, or any OpenAI-compatible endpoint
 - **Auto Metadata**: Generates title and tags in the same language as the input
@@ -72,6 +72,14 @@ $ zk-agent "Maybe use webhooks for real-time notifications? Need to research."
    Tags: #webhook, #real-time, #research
    Confidence: 95%
 ```
+
+## Classification Criteria
+
+| Type | Criteria | Examples |
+|------|----------|---------|
+| **Fleeting** | Raw, undeveloped thought. Questions, todos, "what if" ideas. | "Maybe use webhooks for notifications? Need to research." |
+| **Literature** | References or paraphrases an external source — article, product, talk, documentation. | "Shopify built Sidekick, an AI that ties together product management and marketing." |
+| **Permanent** | Your own synthesized conclusion. Connects multiple ideas, draws analogies, proposes frameworks. | "Good API design is like translation — hiding complexity so users focus on goals." |
 
 ## Architecture
 
