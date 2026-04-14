@@ -1,15 +1,16 @@
 # ZK Agent
 
-AI agent that classifies conversation insights into Zettelkasten note types and saves them to Heptabase.
+AI agent that classifies conversation insights into Zettelkasten note types and saves them to your note-taking app.
 
 ## Features
 
 - **ZK Classification**: LLM classifies notes as Fleeting, Literature, or Permanent
-- **Smart Routing**: Fleeting → journal, Literature/Permanent → cards (reduces noise)
+- **Smart Routing**: Fleeting → daily note/journal, Literature/Permanent → cards
+- **Multi-destination**: Heptabase, Obsidian (more coming)
+- **Any LLM Provider**: OpenAI, Anthropic, OpenRouter, Ollama, or any OpenAI-compatible endpoint
 - **Auto Metadata**: Generates title and tags in the same language as the input
-- **Smart Linking**: Searches existing Heptabase notes for related content
+- **Smart Linking**: Searches existing notes for related content
 - **Conversation Scanner**: Auto-detect insights worth saving from any conversation
-- **Claude Code Integration**: `/zk` and `/zk-scan` commands for seamless workflow
 - **Multi-language**: Works with Chinese, English, or mixed-language input
 
 ## Quick Start
@@ -17,14 +18,16 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 ### Prerequisites
 
 - Python 3.11+
-- Heptabase account with MCP access
 - API key from any supported LLM provider
+- A note-taking app: Heptabase (MCP) or Obsidian (local vault)
 
 ### Setup
 
-1. Create `.env` in the project root with your LLM provider:
+1. Create `.env` in the project root:
    ```bash
-   # Option A: Anthropic (default, cheapest for this use case)
+   # --- LLM Provider (pick one) ---
+
+   # Option A: Anthropic (default)
    ANTHROPIC_API_KEY=sk-ant-your-key-here
 
    # Option B: OpenAI
@@ -35,14 +38,21 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
    LLM_API_KEY=your-key
    LLM_BASE_URL=https://openrouter.ai/api/v1
    LLM_MODEL=anthropic/claude-haiku-4-5-20251001
+
+   # --- Storage (pick one) ---
+
+   # Heptabase (default) — run 'python scripts/zk_agent.py setup' to authorize
+   STORAGE=heptabase
+
+   # Obsidian — set vault path, no setup needed
+   STORAGE=obsidian
+   OBSIDIAN_VAULT=~/Documents/MyVault
    ```
-2. Authorize Heptabase (opens browser for OAuth):
+
+2. If using Heptabase, authorize via OAuth (opens browser):
    ```bash
    python scripts/zk_agent.py setup
    ```
-   Tokens are stored at `~/.zk-agent/tokens/heptabase.json`.
-
-   > If you already have [Hermes Agent](https://github.com/NousResearch/hermes-agent) with Heptabase configured, ZK Agent can auto-detect your existing tokens.
 
 ### Usage
 
@@ -50,7 +60,7 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 # Save an insight (auto-classifies and routes)
 python scripts/zk_agent.py "Your insight text here"
 
-# With source attribution (renders as clickable link in Heptabase)
+# With source attribution (renders as clickable link)
 python scripts/zk_agent.py "Insight from article" --source "https://example.com/article"
 ```
 
@@ -68,7 +78,7 @@ $ python scripts/zk_agent.py "好的 API 設計像好的翻譯——讓使用者
    Confidence: 85%
 ```
 
-**Fleeting note → journal:**
+**Fleeting note → daily note:**
 ```
 $ python scripts/zk_agent.py "也許可以用 webhook 做即時通知？要研究一下"
 
@@ -84,9 +94,13 @@ $ python scripts/zk_agent.py "也許可以用 webhook 做即時通知？要研�
 Input text
   → Classifier (LLM) → fleeting / literature / permanent
   → Metadata Generator (LLM) → title + tags
-  → Router:
-      Fleeting → append to Heptabase journal (## 🧠 ZK Fleeting Notes)
-      Literature/Permanent → Linker (semantic search) → save as Heptabase card
+  → Storage backend:
+      Fleeting → daily note / journal
+      Literature/Permanent → search related → save as card
+
+Storage backends:
+  heptabase  → MCP (save_to_note_card + append_to_journal)
+  obsidian   → local .md files (ZK-Agent/ + Daily Notes/)
 ```
 
 Auto-detect mode:
@@ -101,24 +115,28 @@ Conversation text
 
 ```
 scripts/
-  zk_agent.py           — Main pipeline (classify → route → save)
-  classifier.py         — ZK note type classification
-  metadata_generator.py — Title + tags generation
-  heptabase_client.py   — Direct MCP SDK client for Heptabase
-  linker.py             — Semantic search for related notes
-  journal.py            — Fleeting notes to journal
-  detector.py           — Conversation insight scanner
-  env.py                — .env file loader
-tests/                  — 8 tests (classifier 5/5 + detector 2/2)
+  zk_agent.py            — Main pipeline (classify → route → save)
+  classifier.py          — ZK note type classification
+  metadata_generator.py  — Title + tags generation
+  detector.py            — Conversation insight scanner
+  llm.py                 — Unified LLM client (any OpenAI-compatible provider)
+  storage.py             — Storage interface + backend selector
+  storage_heptabase.py   — Heptabase backend (MCP)
+  storage_obsidian.py    — Obsidian backend (local Markdown)
+  heptabase_client.py    — Heptabase MCP connection + OAuth
+  oauth.py               — Self-contained OAuth 2.1 for Heptabase
+  setup.py               — 'zk-agent setup' CLI
+  env.py                 — .env file loader
+tests/                   — 8 tests (classifier 5/5 + detector 2/2)
 ```
 
 ## Status
 
 **Phase 1 — MVP**: ✅ Complete
 
-**Phase 2 — Auto-detect**: ✅ Core complete (detector + `/zk-scan` command)
+**Phase 2 — Auto-detect**: ✅ Complete (detector + `/zk-scan` + `/wrap-up` integration)
 
-**Phase 3 — Multi-destination**: Planned (Obsidian, Notion, local markdown)
+**Phase 3 — Multi-destination**: ✅ Heptabase + Obsidian (Notion planned)
 
 ## License
 

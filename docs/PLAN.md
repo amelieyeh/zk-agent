@@ -79,14 +79,17 @@ Scan conversations for insights worth saving, present candidates for approval.
 | D4 | `/wrap-up` integration — auto-scan at end of day | ✅ | Step 5 in wrap-up flow |
 | D5 | Multi-provider LLM support | ✅ | `llm.py` — OpenAI, Anthropic, OpenRouter, Ollama |
 
-### Phase 3 — Multi-destination (planned)
+### Phase 3 — Multi-destination (✅ core complete)
 
-Support Obsidian, Notion, local markdown in addition to Heptabase.
+Pluggable storage backends via `NoteStorage` protocol.
 
-Priority from research:
-1. **Obsidian** — local `.md` files, no API needed, highest ZK user overlap
-2. **Notion** — mature REST API + official MCP, largest user base (30M)
-3. **Logseq** — local Markdown, high ZK community overlap
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| S1 | `storage.py` — storage interface + backend selector | ✅ | `STORAGE` env var |
+| S2 | `storage_heptabase.py` — Heptabase backend | ✅ | Default, MCP-based |
+| S3 | `storage_obsidian.py` — Obsidian backend | ✅ | Local .md files |
+| S4 | `storage_notion.py` — Notion backend | Planned | REST API + MCP |
+| S5 | `storage_logseq.py` — Logseq backend | Planned | Local Markdown |
 
 ## Key Technical Decisions
 
