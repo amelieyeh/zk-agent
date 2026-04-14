@@ -134,7 +134,7 @@ def _setup_storage(config: dict) -> dict:
         config["storage"] = "heptabase"
         print("\n  Authorizing Heptabase...")
         try:
-            from setup import run_setup
+            from zk_agent.setup import run_setup
             asyncio.run(run_setup())
         except Exception as e:
             print(f"  ✗ OAuth failed: {e}")

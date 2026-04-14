@@ -61,11 +61,11 @@ def get_storage() -> NoteStorage | None:
         return None
 
     if backend == "heptabase":
-        from storage_heptabase import HeptabaseStorage
+        from zk_agent.storage_heptabase import HeptabaseStorage
         return HeptabaseStorage()
 
     if backend == "obsidian":
-        from storage_obsidian import ObsidianStorage
+        from zk_agent.storage_obsidian import ObsidianStorage
         return ObsidianStorage()
 
     raise ValueError(
