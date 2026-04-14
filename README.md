@@ -17,25 +17,22 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 ### Prerequisites
 
 - Python 3.11+
-- [Hermes Agent](https://github.com/NousResearch/hermes-agent) (for OAuth token management)
 - Heptabase account with MCP access
 - Anthropic API key
 
 ### Setup
 
-1. Install Hermes and run `hermes setup` to configure a model provider
-2. Add Heptabase MCP to `~/.hermes/config.yaml`:
-   ```yaml
-   mcp_servers:
-     heptabase:
-       url: "https://api.heptabase.com/mcp"
-       auth: oauth
-   ```
-3. Run `hermes chat` once to complete Heptabase OAuth (then exit)
-4. Create `.env` in the project root:
+1. Create `.env` in the project root:
    ```
    ANTHROPIC_API_KEY=sk-ant-your-key-here
    ```
+2. Authorize Heptabase (opens browser for OAuth):
+   ```bash
+   python scripts/zk_agent.py setup
+   ```
+   Tokens are stored at `~/.zk-agent/tokens/heptabase.json`.
+
+   > If you already have [Hermes Agent](https://github.com/NousResearch/hermes-agent) with Heptabase configured, ZK Agent auto-detects your existing tokens — no setup needed.
 
 ### Usage
 

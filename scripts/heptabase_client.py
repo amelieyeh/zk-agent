@@ -1,31 +1,43 @@
 """
 Heptabase MCP Client.
 
-Direct connection to Heptabase via Python MCP SDK + OAuth token.
-Tokens managed by Hermes at ~/.hermes/mcp-tokens/heptabase.json.
+Direct connection to Heptabase via Python MCP SDK.
+Token resolution: ~/.zk-agent/tokens/ → ~/.hermes/mcp-tokens/ → OAuth flow.
 """
 
 import json
-from pathlib import Path
 
 from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 
+from oauth import get_stored_token, build_oauth_provider, _find_free_port, _start_callback_server, _callback_result
+
 HEPTABASE_MCP_URL = "https://api.heptabase.com/mcp"
-TOKEN_PATH = Path.home() / ".hermes" / "mcp-tokens" / "heptabase.json"
-
-
-def _load_token() -> str:
-    with open(TOKEN_PATH) as f:
-        data = json.load(f)
-    return data["access_token"]
 
 
 async def _get_session():
-    """Create an MCP client session to Heptabase."""
-    token = _load_token()
-    headers = {"Authorization": f"Bearer {token}"}
-    return streamablehttp_client(HEPTABASE_MCP_URL, headers=headers)
+    """Create an MCP client session to Heptabase.
+
+    Uses stored token if available, falls back to OAuth flow.
+    """
+    token = get_stored_token()
+    if token:
+        # Fast path: use stored Bearer token
+        return streamablehttp_client(
+            HEPTABASE_MCP_URL,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+    # No token — trigger OAuth flow
+    print("No Heptabase token found. Starting authorization...", flush=True)
+    port = _find_free_port()
+    server = _start_callback_server(port)
+    _callback_result.clear()
+    try:
+        provider = build_oauth_provider(port)
+        return streamablehttp_client(HEPTABASE_MCP_URL, auth=provider)
+    finally:
+        server.shutdown()
 
 
 async def save_note_card(content_md: str) -> str:
@@ -44,10 +56,7 @@ async def save_note_card(content_md: str) -> str:
 
 
 async def search_related(query: str, max_results: int = 3) -> list[dict]:
-    """Search Heptabase for notes related to query text.
-
-    Returns list of result objects from semantic_search_objects.
-    """
+    """Search Heptabase for notes related to query text."""
     async with await _get_session() as (read, write, _):
         async with ClientSession(read, write) as session:
             await session.initialize()

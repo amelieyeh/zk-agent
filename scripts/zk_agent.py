@@ -95,8 +95,15 @@ async def save_note(text: str, source: str | None = None) -> dict:
 
 
 def main():
+    if len(sys.argv) >= 2 and sys.argv[1] == "setup":
+        from setup import run_setup
+        asyncio.run(run_setup())
+        return
+
     if len(sys.argv) < 2:
-        print("Usage: python zk_agent.py <text> [--source <source>]")
+        print("Usage:")
+        print("  python zk_agent.py setup                  — Authorize Heptabase")
+        print("  python zk_agent.py <text> [--source <url>] — Save an insight")
         sys.exit(1)
 
     args = sys.argv[1:]

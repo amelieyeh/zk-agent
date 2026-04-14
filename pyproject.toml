@@ -11,6 +11,7 @@ license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
     "anthropic>=0.40.0",
+    "mcp>=1.27.0",
 ]
 
 [project.optional-dependencies]
