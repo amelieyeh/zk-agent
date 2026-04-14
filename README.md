@@ -23,36 +23,19 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 
 ### Setup
 
-1. Create `.env` in the project root:
-   ```bash
-   # --- LLM Provider (pick one) ---
+Run the interactive setup wizard:
 
-   # Option A: Anthropic (default)
-   ANTHROPIC_API_KEY=sk-ant-your-key-here
+```bash
+python scripts/zk_agent.py init
+```
 
-   # Option B: OpenAI
-   LLM_API_KEY=sk-your-key-here
-   LLM_MODEL=gpt-4o-mini
+It guides you through:
+1. **AI provider** — Anthropic, OpenAI, OpenRouter, Ollama, or any OpenAI-compatible endpoint
+2. **Note storage** — Heptabase (OAuth), Obsidian (local vault), or output-only
 
-   # Option C: Any OpenAI-compatible endpoint (OpenRouter, Ollama, etc.)
-   LLM_API_KEY=your-key
-   LLM_BASE_URL=https://openrouter.ai/api/v1
-   LLM_MODEL=anthropic/claude-haiku-4-5-20251001
+Config is saved to `~/.zk-agent/config.json`.
 
-   # --- Storage (pick one) ---
-
-   # Heptabase (default) — run 'python scripts/zk_agent.py setup' to authorize
-   STORAGE=heptabase
-
-   # Obsidian — set vault path, no setup needed
-   STORAGE=obsidian
-   OBSIDIAN_VAULT=~/Documents/MyVault
-   ```
-
-2. If using Heptabase, authorize via OAuth (opens browser):
-   ```bash
-   python scripts/zk_agent.py setup
-   ```
+> For developers: `.env` in the project root is also supported and takes priority over config.
 
 ### Usage
 

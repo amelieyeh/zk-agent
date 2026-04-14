@@ -8,8 +8,10 @@ Orchestrates the full flow:
 import asyncio
 import sys
 
+from config import apply_config
 from env import load_env
-load_env()
+apply_config()  # ~/.zk-agent/config.json (user config)
+load_env()      # .env file (developer override)
 
 from classifier import classify_note
 from metadata_generator import generate_metadata, NoteMetadata
@@ -100,6 +102,11 @@ async def save_note(text: str, source: str | None = None) -> dict:
 
 
 def main():
+    if len(sys.argv) >= 2 and sys.argv[1] == "init":
+        from init_wizard import run_init
+        run_init()
+        return
+
     if len(sys.argv) >= 2 and sys.argv[1] == "setup":
         from setup import run_setup
         asyncio.run(run_setup())
@@ -107,7 +114,8 @@ def main():
 
     if len(sys.argv) < 2:
         print("Usage:")
-        print("  python zk_agent.py setup                   — Authorize note storage")
+        print("  python zk_agent.py init                    — Interactive setup wizard")
+        print("  python zk_agent.py setup                   — Re-authorize Heptabase OAuth")
         print("  python zk_agent.py <text> [--source <url>] — Save an insight")
         sys.exit(1)
 
