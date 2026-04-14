@@ -2,12 +2,12 @@
 
 ## Overview
 
-AI agent that automatically identifies valuable insights from conversations and saves them as Zettelkasten notes to Heptabase.
+AI agent that classifies conversation insights into Zettelkasten note types and saves them to your note-taking app.
 
 **Runtime:** Python 3.11+ with OpenAI-compatible SDK + MCP SDK
-**Classification:** Any LLM via OpenAI-compatible API (default: Claude Haiku)
-**Storage:** Heptabase official MCP (`https://api.heptabase.com/mcp`), more destinations planned
-**Publish target:** PyPI + agentskills.io
+**Classification:** Any LLM via OpenAI-compatible API
+**Storage:** Heptabase (MCP), Obsidian (local Markdown), or output-only
+**Publish target:** PyPI
 
 ## Architecture
 
@@ -15,21 +15,18 @@ AI agent that automatically identifies valuable insights from conversations and 
 User input (conversation snippet / insight)
     ↓
 ZK Classification Engine (LLM API — any OpenAI-compatible provider)
-    ├── Fleeting Note → journal only (under dedicated section)
-    ├── Literature Note → Heptabase card
-    └── Permanent Note → Heptabase card
+    ├── Fleeting Note → daily note (under dedicated section)
+    ├── Literature Note → card
+    └── Permanent Note → card
     ↓
 Metadata Generator (LLM API)
     ├── Title (auto-generated, same language as input)
     └── Tags (3-5, lowercase)
     ↓
-Linker (Heptabase semantic_search_objects) [literature/permanent only]
-    └── Find related existing notes, suggest connections
-    ↓
-Heptabase MCP (direct connection via Python MCP SDK + OAuth token)
-    ├── save_to_note_card — create card (Markdown, h1 = title, source as clickable link)
-    ├── semantic_search_objects — find related notes
-    └── append_to_journal — fleeting notes under "## 🧠 ZK Fleeting Notes" section
+Storage Backend (user-configured)
+    ├── heptabase  → MCP (save_to_note_card + append_to_journal)
+    ├── obsidian   → local .md files (ZK-Agent/ + Daily Notes/)
+    └── (none)     → output Markdown only
 ```
 
 Auto-detect flow (Phase 2):
@@ -45,7 +42,7 @@ Insight Detector (LLM API)
 Key decisions:
 - **Self-contained OAuth** — built-in OAuth flow, no external dependencies. Tokens at `~/.zk-agent/tokens/`
 - **Any LLM provider** — unified `llm.py` interface via OpenAI-compatible SDK (OpenAI, Anthropic, OpenRouter, Ollama)
-- **Fleeting → journal, not card** — reduces card volume, fleeting notes live in daily journal under dedicated section
+- **Fleeting → daily note, not card** — reduces card volume, fleeting notes live in daily note under dedicated section
 - **No Heptabase tag API** — MCP doesn't expose tag management, note type indicated in card metadata text
 
 ## Phases
@@ -65,7 +62,7 @@ Manual trigger mode: user provides text, agent classifies + saves.
 | T7 | Fleeting note routing | ✅ | Appends under `## 🧠 ZK Fleeting Notes` section |
 | T8 | Tests | ✅ | 8/8 pass (classifier 5/5 + detector 2/2) |
 | T9 | Packaging | Pending | `SKILL.md` + `pyproject.toml` ready |
-| T10 | Publish to agentskills.io | Pending | |
+| T10 | Publish to PyPI | Pending | |
 
 ### Phase 2 — Auto-detect (✅ core complete)
 
@@ -88,8 +85,6 @@ Pluggable storage backends via `NoteStorage` protocol.
 | S1 | `storage.py` — storage interface + backend selector | ✅ | `STORAGE` env var |
 | S2 | `storage_heptabase.py` — Heptabase backend | ✅ | Default, MCP-based |
 | S3 | `storage_obsidian.py` — Obsidian backend | ✅ | Local .md files |
-| S4 | `storage_notion.py` — Notion backend | Planned | REST API + MCP |
-| S5 | `storage_logseq.py` — Logseq backend | Planned | Local Markdown |
 
 ## Key Technical Decisions
 
@@ -101,9 +96,9 @@ ZK note types have fuzzy boundaries that need semantic understanding. Any OpenAI
 
 The Python MCP SDK connects directly to Heptabase using self-managed OAuth tokens. No external agent framework required.
 
-### Note routing: fleeting → journal, literature/permanent → card
+### Note routing: fleeting → daily note, literature/permanent → card
 
-One conversation can easily produce 4+ insights. Creating a card for each floods Heptabase. Fleeting notes (raw thoughts, questions, todos) go to the daily journal under a dedicated section. Only literature and permanent notes — which represent developed ideas — become cards.
+One conversation can easily produce 4+ insights. Creating a card for each floods the note app. Fleeting notes (raw thoughts, questions, todos) go to the daily note under a dedicated section. Only literature and permanent notes — which represent developed ideas — become cards.
 
 ### Types: Python TypedDict
 

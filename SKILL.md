@@ -13,9 +13,10 @@ Classifies conversation insights as Zettelkasten note types (Fleeting / Literatu
 ## Usage
 
 ```
-python scripts/zk_agent.py setup                     — Authorize storage (Heptabase only)
+python scripts/zk_agent.py init                      — Interactive setup wizard
 python scripts/zk_agent.py <text>                     — Classify and save an insight
 python scripts/zk_agent.py <text> --source <url>      — Save with source attribution
+python scripts/zk_agent.py setup                     — Re-authorize Heptabase OAuth
 ```
 
 ## Requirements

@@ -6,7 +6,7 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 
 - **ZK Classification**: LLM classifies notes as Fleeting, Literature, or Permanent
 - **Smart Routing**: Fleeting → daily note, Literature/Permanent → cards
-- **Multi-destination**: Heptabase, Obsidian (more coming)
+- **Multi-destination**: Heptabase, Obsidian
 - **Any LLM Provider**: OpenAI, Anthropic, OpenRouter, Ollama, or any OpenAI-compatible endpoint
 - **Auto Metadata**: Generates title and tags in the same language as the input
 - **Smart Linking**: Searches existing notes for related content
@@ -47,7 +47,7 @@ python scripts/zk_agent.py "Your insight text here"
 python scripts/zk_agent.py "Insight from article" --source "https://example.com/article"
 ```
 
-If using Claude Code, the `/zk` and `/zk-scan` commands provide a more integrated experience.
+Works with any MCP-capable AI tool (e.g. Claude Code) for a more integrated experience.
 
 ### Examples
 
@@ -108,8 +108,10 @@ scripts/
   storage_obsidian.py    — Obsidian backend (local Markdown)
   heptabase_client.py    — Heptabase MCP connection + OAuth
   oauth.py               — Self-contained OAuth 2.1 for Heptabase
-  setup.py               — 'zk-agent setup' CLI
-  env.py                 — .env file loader
+  config.py              — User config (~/.zk-agent/config.json)
+  init_wizard.py         — Interactive setup wizard
+  setup.py               — Heptabase OAuth re-authorization
+  env.py                 — .env file loader (developer override)
 tests/                   — 8 tests (classifier 5/5 + detector 2/2)
 ```
 
@@ -119,7 +121,7 @@ tests/                   — 8 tests (classifier 5/5 + detector 2/2)
 
 **Phase 2 — Auto-detect**: ✅ Complete (detector + `/zk-scan` command)
 
-**Phase 3 — Multi-destination**: ✅ Heptabase + Obsidian (Notion planned)
+**Phase 3 — Multi-destination**: ✅ Heptabase + Obsidian
 
 ## License
 
