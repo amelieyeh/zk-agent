@@ -181,5 +181,5 @@ def run_init():
     print(f"  ✅ Setup complete!")
     print(f"  Config saved to ~/.zk-agent/config.json")
     print(f"\n  Try it:")
-    print(f'    python scripts/zk_agent.py "Your first insight"')
+    print(f'    zk-agent "Your first insight"')
     print(f"{'=' * 50}")
