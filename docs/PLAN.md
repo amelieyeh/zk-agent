@@ -128,7 +128,7 @@ class NoteMetadata(TypedDict):
 ### Manual save (permanent → card)
 
 ```
-$ python scripts/zk_agent.py "Good API design is like good translation — it lets users accomplish goals without understanding the underlying complexity."
+$ zk-agent "Good API design is like good translation — it lets users accomplish goals without understanding the underlying complexity."
 
 ✅ Saved as permanent note → card
    Title: Good API Design as Translation
@@ -139,7 +139,7 @@ $ python scripts/zk_agent.py "Good API design is like good translation — it le
 ### Manual save (fleeting → daily note)
 
 ```
-$ python scripts/zk_agent.py "Maybe use webhooks for real-time notifications? Need to research."
+$ zk-agent "Maybe use webhooks for real-time notifications? Need to research."
 
 📝 Fleeting note → daily note
    Title: Research webhooks for real-time notifications
@@ -150,7 +150,7 @@ $ python scripts/zk_agent.py "Maybe use webhooks for real-time notifications? Ne
 ### Auto-detect scan
 
 ```
-$ python scripts/detector.py  # or via /zk-scan in Claude Code
+$ zk-agent scan  # or via /zk-scan in Claude Code
 
 Scanning conversation... found 2 candidates:
 

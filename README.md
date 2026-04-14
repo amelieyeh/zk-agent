@@ -15,18 +15,20 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 
 ## Quick Start
 
-### Prerequisites
+### Install
 
-- Python 3.11+
-- API key from any supported LLM provider
-- A note-taking app: Heptabase (MCP) or Obsidian (local vault)
+```bash
+pipx install zk-agent
+```
+
+Or with pip: `pip install zk-agent`
 
 ### Setup
 
 Run the interactive setup wizard:
 
 ```bash
-python scripts/zk_agent.py init
+zk-agent init
 ```
 
 It guides you through:
@@ -41,10 +43,10 @@ Config is saved to `~/.zk-agent/config.json`.
 
 ```bash
 # Save an insight (auto-classifies and routes)
-python scripts/zk_agent.py "Your insight text here"
+zk-agent "Your insight text here"
 
 # With source attribution (renders as clickable link)
-python scripts/zk_agent.py "Insight from article" --source "https://example.com/article"
+zk-agent "Insight from article" --source "https://example.com/article"
 ```
 
 Works with any MCP-capable AI tool (e.g. Claude Code) for a more integrated experience.
@@ -53,7 +55,7 @@ Works with any MCP-capable AI tool (e.g. Claude Code) for a more integrated expe
 
 **Permanent note → card:**
 ```
-$ python scripts/zk_agent.py "Good API design is like good translation — it lets users accomplish goals without understanding the underlying complexity."
+$ zk-agent "Good API design is like good translation — it lets users accomplish goals without understanding the underlying complexity."
 
 ✅ Saved as permanent note → card
    Title: Good API Design as Translation
@@ -63,7 +65,7 @@ $ python scripts/zk_agent.py "Good API design is like good translation — it le
 
 **Fleeting note → daily note:**
 ```
-$ python scripts/zk_agent.py "Maybe use webhooks for real-time notifications? Need to research."
+$ zk-agent "Maybe use webhooks for real-time notifications? Need to research."
 
 📝 Fleeting note → daily note
    Title: Research webhooks for real-time notifications
