@@ -134,7 +134,7 @@ tests/                   — 8 tests (classifier 5/5 + detector 2/2)
 
 **Phase 1 — MVP**: ✅ Complete
 
-**Phase 2 — Auto-detect**: ✅ Complete (detector + `/zk-scan` + `/wrap-up` integration)
+**Phase 2 — Auto-detect**: ✅ Complete (detector + `/zk-scan` command)
 
 **Phase 3 — Multi-destination**: ✅ Heptabase + Obsidian (Notion planned)
 

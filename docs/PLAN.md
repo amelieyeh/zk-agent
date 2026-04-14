@@ -76,7 +76,7 @@ Scan conversations for insights worth saving, present candidates for approval.
 | D1 | `detector.py` — scan conversation for ZK-worthy insights | ✅ | LLM-powered, returns 0-5 candidates |
 | D2 | `/zk` Claude Code command — manual save | ✅ | Works in any session |
 | D3 | `/zk-scan` Claude Code command — batch scan + select | ✅ | Scan conversation, approve/reject each |
-| D4 | `/wrap-up` integration — auto-scan at end of day | ✅ | Step 5 in wrap-up flow |
+| D4 | End-of-day scan integration | ✅ | Can be hooked into any CLI workflow |
 | D5 | Multi-provider LLM support | ✅ | `llm.py` — OpenAI, Anthropic, OpenRouter, Ollama |
 
 ### Phase 3 — Multi-destination (✅ core complete)
