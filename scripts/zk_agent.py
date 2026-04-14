@@ -29,7 +29,7 @@ def _format_card(text: str, metadata: NoteMetadata) -> str:
         f"- {r}" for r in metadata["related_notes"]
     ) or "None yet"
 
-    source_line = f"Source: {metadata['source']}" if metadata["source"] else ""
+    source_line = f"Source: [{metadata['source']}]({metadata['source']})" if metadata["source"] else ""
     meta_block = "\n".join(
         line for line in [
             f"Type: {metadata['note_type']} | Confidence: {metadata['confidence']:.0%}",
