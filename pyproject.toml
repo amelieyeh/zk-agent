@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "zk-agent"
 version = "0.1.0"
-description = "AI agent that auto-captures Zettelkasten notes from AI conversations to Heptabase"
+description = "Classify conversation insights into Zettelkasten notes and save to your note-taking app"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
@@ -17,5 +17,12 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
     "ruff>=0.8.0",
 ]
+
+[project.scripts]
+zk-agent = "zk_agent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

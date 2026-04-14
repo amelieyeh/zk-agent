@@ -7,7 +7,7 @@ at ~/.zk-agent/tokens/heptabase.json.
 
 import asyncio
 
-from oauth import get_token_status, build_oauth_provider, _find_free_port, _start_callback_server, _callback_result
+from zk_agent.oauth import get_token_status, build_oauth_provider, _find_free_port, _start_callback_server, _callback_result
 from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 

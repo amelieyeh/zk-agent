@@ -8,7 +8,7 @@ as Zettelkasten notes. Returns candidates with suggested note type.
 import json
 from typing import TypedDict
 
-from llm import chat
+from zk_agent.llm import chat
 
 
 class InsightCandidate(TypedDict):

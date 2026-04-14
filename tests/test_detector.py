@@ -1,14 +1,10 @@
 """Tests for the insight detector."""
 
 import os
-import sys
-from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
-
-from detector import detect_insights
+from zk_agent.detector import detect_insights
 
 
 SAMPLE_CONVERSATION = """
@@ -38,8 +34,8 @@ Agent: Done, committed.
 
 
 @pytest.mark.skipif(
-    not os.environ.get("ANTHROPIC_API_KEY"),
-    reason="ANTHROPIC_API_KEY not set",
+    not os.environ.get("ANTHROPIC_API_KEY") and not os.environ.get("LLM_API_KEY"),
+    reason="No LLM API key set",
 )
 class TestDetector:
     def test_finds_insights_in_rich_conversation(self):

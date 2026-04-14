@@ -9,7 +9,7 @@ import json
 from datetime import datetime, timezone
 from typing import TypedDict, Literal
 
-from llm import chat
+from zk_agent.llm import chat
 
 
 class NoteMetadata(TypedDict):

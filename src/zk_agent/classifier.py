@@ -10,7 +10,7 @@ Classifies text into Zettelkasten note types:
 import json
 from typing import TypedDict, Literal
 
-from llm import chat
+from zk_agent.llm import chat
 
 NoteType = Literal["fleeting", "literature", "permanent"]
 

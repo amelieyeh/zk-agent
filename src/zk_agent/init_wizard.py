@@ -8,7 +8,7 @@ Saves to ~/.zk-agent/config.json.
 import asyncio
 import sys
 
-from config import load_config, save_config
+from zk_agent.config import load_config, save_config
 
 
 def _prompt_choice(question: str, options: list[str], allow_skip: bool = False) -> int | None:

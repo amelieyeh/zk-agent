@@ -1,10 +1,6 @@
-"""Load .env before tests run."""
+"""Load config + .env before tests run."""
 
-import sys
-from pathlib import Path
-
-# Add scripts to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
-
-from env import load_env
+from zk_agent.config import apply_config
+from zk_agent.env import load_env
+apply_config()
 load_env()

@@ -10,7 +10,7 @@ import json
 from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 
-from oauth import get_stored_token, build_oauth_provider, _find_free_port, _start_callback_server, _callback_result
+from zk_agent.oauth import get_stored_token, build_oauth_provider, _find_free_port, _start_callback_server, _callback_result
 
 HEPTABASE_MCP_URL = "https://api.heptabase.com/mcp"
 

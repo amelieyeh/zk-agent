@@ -7,7 +7,7 @@ semantic_search_objects). Requires OAuth setup via 'zk-agent setup'.
 
 from datetime import datetime, timezone
 
-from heptabase_client import (
+from zk_agent.heptabase_client import (
     save_note_card,
     search_related as _search_related,
     append_journal,

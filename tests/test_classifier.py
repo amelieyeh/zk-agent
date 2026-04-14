@@ -2,15 +2,11 @@
 
 import json
 import os
-import sys
 from pathlib import Path
 
 import pytest
 
-# Add scripts to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
-
-from classifier import classify_note
+from zk_agent.classifier import classify_note
 
 FIXTURES_PATH = Path(__file__).parent / "fixtures" / "sample_insights.json"
 
@@ -26,8 +22,8 @@ def fixtures():
 
 
 @pytest.mark.skipif(
-    not os.environ.get("ANTHROPIC_API_KEY"),
-    reason="ANTHROPIC_API_KEY not set",
+    not os.environ.get("ANTHROPIC_API_KEY") and not os.environ.get("LLM_API_KEY"),
+    reason="No LLM API key set",
 )
 class TestClassifier:
     def test_returns_valid_structure(self, fixtures):
