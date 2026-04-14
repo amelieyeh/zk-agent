@@ -6,11 +6,10 @@ Generates structured metadata for a Zettelkasten note:
 """
 
 import json
-import os
 from datetime import datetime, timezone
 from typing import TypedDict, Literal
 
-import anthropic
+from llm import chat
 
 
 class NoteMetadata(TypedDict):
@@ -43,25 +42,15 @@ def generate_metadata(
     classification: dict,
     source: str | None = None,
 ) -> NoteMetadata:
-    """Generate structured metadata for a note using Claude Haiku."""
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+    """Generate structured metadata for a note."""
+    raw = chat(
+        METADATA_PROMPT.format(
+            note_type=classification["note_type"],
+            confidence=classification["confidence"],
+            text=text,
+        ),
         max_tokens=200,
-        messages=[
-            {
-                "role": "user",
-                "content": METADATA_PROMPT.format(
-                    note_type=classification["note_type"],
-                    confidence=classification["confidence"],
-                    text=text,
-                ),
-            }
-        ],
     )
-
-    raw = response.content[0].text.strip()
     if raw.startswith("```"):
         raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
     parsed = json.loads(raw)

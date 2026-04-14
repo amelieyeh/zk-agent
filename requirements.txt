@@ -1,5 +1,5 @@
 # Core
-anthropic>=0.40.0       # Claude API for classification
+openai>=1.0.0           # OpenAI-compatible API (works with OpenAI, Anthropic, Ollama, etc.)
 mcp>=1.27.0             # MCP SDK for Heptabase connection (>=1.27.0 for OAuth fix)
 
 # Testing

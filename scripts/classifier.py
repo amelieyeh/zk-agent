@@ -1,17 +1,16 @@
 """
 ZK Note Classifier.
 
-Uses Claude Haiku to classify text into Zettelkasten note types:
+Classifies text into Zettelkasten note types:
   - fleeting: raw thought, quick observation, not yet developed
   - literature: insight from external source, paraphrased in own words
   - permanent: own synthesized conclusion, connects multiple ideas
 """
 
 import json
-import os
 from typing import TypedDict, Literal
 
-import anthropic
+from llm import chat
 
 NoteType = Literal["fleeting", "literature", "permanent"]
 
@@ -36,16 +35,8 @@ Insight:
 
 
 def classify_note(text: str) -> Classification:
-    """Classify text into a Zettelkasten note type using Claude Haiku."""
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=200,
-        messages=[{"role": "user", "content": CLASSIFY_PROMPT.format(text=text)}],
-    )
-
-    raw = response.content[0].text.strip()
+    """Classify text into a Zettelkasten note type."""
+    raw = chat(CLASSIFY_PROMPT.format(text=text), max_tokens=200)
     if raw.startswith("```"):
         raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
     parsed = json.loads(raw)

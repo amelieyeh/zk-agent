@@ -18,13 +18,23 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 
 - Python 3.11+
 - Heptabase account with MCP access
-- Anthropic API key
+- API key from any supported LLM provider
 
 ### Setup
 
-1. Create `.env` in the project root:
-   ```
+1. Create `.env` in the project root with your LLM provider:
+   ```bash
+   # Option A: Anthropic (default, cheapest for this use case)
    ANTHROPIC_API_KEY=sk-ant-your-key-here
+
+   # Option B: OpenAI
+   LLM_API_KEY=sk-your-key-here
+   LLM_MODEL=gpt-4o-mini
+
+   # Option C: Any OpenAI-compatible endpoint (OpenRouter, Ollama, etc.)
+   LLM_API_KEY=your-key
+   LLM_BASE_URL=https://openrouter.ai/api/v1
+   LLM_MODEL=anthropic/claude-haiku-4-5-20251001
    ```
 2. Authorize Heptabase (opens browser for OAuth):
    ```bash

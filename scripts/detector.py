@@ -6,10 +6,9 @@ as Zettelkasten notes. Returns candidates with suggested note type.
 """
 
 import json
-import os
 from typing import TypedDict
 
-import anthropic
+from llm import chat
 
 
 class InsightCandidate(TypedDict):
@@ -38,15 +37,7 @@ Conversation:
 
 def detect_insights(conversation: str) -> list[InsightCandidate]:
     """Scan conversation text for ZK-worthy insights."""
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=1000,
-        messages=[{"role": "user", "content": DETECT_PROMPT.format(conversation=conversation)}],
-    )
-
-    raw = response.content[0].text.strip()
+    raw = chat(DETECT_PROMPT.format(conversation=conversation), max_tokens=1000)
     if raw.startswith("```"):
         raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
 
