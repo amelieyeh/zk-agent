@@ -5,7 +5,7 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 ## Features
 
 - **ZK Classification**: LLM classifies notes as Fleeting, Literature, or Permanent
-- **Smart Routing**: Fleeting → daily note/journal, Literature/Permanent → cards
+- **Smart Routing**: Fleeting → daily note, Literature/Permanent → cards
 - **Multi-destination**: Heptabase, Obsidian (more coming)
 - **Any LLM Provider**: OpenAI, Anthropic, OpenRouter, Ollama, or any OpenAI-compatible endpoint
 - **Auto Metadata**: Generates title and tags in the same language as the input
@@ -70,21 +70,21 @@ If using Claude Code, the `/zk` and `/zk-scan` commands provide a more integrate
 
 **Permanent note → card:**
 ```
-$ python scripts/zk_agent.py "好的 API 設計像好的翻譯——讓使用者不需要理解底層複雜性，就能完成目標。"
+$ python scripts/zk_agent.py "Good API design is like good translation — it lets users accomplish goals without understanding the underlying complexity."
 
 ✅ Saved as permanent note → card
-   Title: 好的 API 設計像翻譯——隱藏複雜性
-   Tags: #api design, #user experience, #abstraction
+   Title: Good API Design as Translation
+   Tags: #api-design, #user-experience, #abstraction
    Confidence: 85%
 ```
 
 **Fleeting note → daily note:**
 ```
-$ python scripts/zk_agent.py "也許可以用 webhook 做即時通知？要研究一下"
+$ python scripts/zk_agent.py "Maybe use webhooks for real-time notifications? Need to research."
 
-📝 Fleeting note → journal
-   Title: 研究 webhook 實現即時通知機制
-   Tags: #webhook, #real-time notification
+📝 Fleeting note → daily note
+   Title: Research webhooks for real-time notifications
+   Tags: #webhook, #real-time, #research
    Confidence: 95%
 ```
 
@@ -95,7 +95,7 @@ Input text
   → Classifier (LLM) → fleeting / literature / permanent
   → Metadata Generator (LLM) → title + tags
   → Storage backend:
-      Fleeting → daily note / journal
+      Fleeting → daily note
       Literature/Permanent → search related → save as card
 
 Storage backends:

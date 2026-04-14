@@ -59,10 +59,10 @@ Manual trigger mode: user provides text, agent classifies + saves.
 | T1 | Heptabase MCP setup + self-contained OAuth | ✅ | `zk-agent setup` triggers browser OAuth |
 | T2 | `classifier.py` — ZK classification via LLM | ✅ | 100% accuracy on 5 fixtures |
 | T3 | `metadata_generator.py` — title + tags generation | ✅ | Same-language titles via LLM |
-| T4 | `linker.py` — semantic search for related notes | ✅ | Uses Heptabase `semantic_search_objects` |
-| T5 | `zk_agent.py` — full pipeline | ✅ | Fleeting → journal, lit/perm → card |
-| T6 | Note templates | ✅ | Markdown format, h1 title, source as clickable link |
-| T7 | `journal.py` — fleeting notes to journal | ✅ | Appends under `## 🧠 ZK Fleeting Notes` section |
+| T4 | Semantic search for related notes | ✅ | Integrated in storage backends |
+| T5 | `zk_agent.py` — full pipeline | ✅ | Fleeting → daily note, lit/perm → card |
+| T6 | Note formatting | ✅ | Markdown card format in `_format_card()` |
+| T7 | Fleeting note routing | ✅ | Appends under `## 🧠 ZK Fleeting Notes` section |
 | T8 | Tests | ✅ | 8/8 pass (classifier 5/5 + detector 2/2) |
 | T9 | Packaging | Pending | `SKILL.md` + `pyproject.toml` ready |
 | T10 | Publish to agentskills.io | Pending | |
@@ -124,8 +124,8 @@ class NoteMetadata(TypedDict):
 
 | Risk | Severity | Status |
 |------|----------|--------|
-| Heptabase OAuth token expiry | Medium | Token refresh not yet implemented |
-| MCP SDK OAuth resource validation bug | Low | Patched locally, lost on SDK upgrade |
+| Heptabase OAuth token expiry | Medium | Token has 48h TTL, no refresh token. Re-auth on expiry. |
+| MCP SDK OAuth resource validation bug | Low | Fixed in SDK >=1.27.0, pinned in requirements |
 | Classification accuracy (zh/en mixed) | Low | 100% on current fixtures |
 
 ## Example Interactions
@@ -133,43 +133,43 @@ class NoteMetadata(TypedDict):
 ### Manual save (permanent → card)
 
 ```
-$ python scripts/zk_agent.py "好的 API 設計像好的翻譯——讓使用者不需要理解底層複雜性，就能完成目標。"
+$ python scripts/zk_agent.py "Good API design is like good translation — it lets users accomplish goals without understanding the underlying complexity."
 
 ✅ Saved as permanent note → card
-   Title: 好的 API 設計像翻譯——隱藏複雜性
-   Tags: #api design, #user experience, #abstraction, #software engineering, #interface design
+   Title: Good API Design as Translation
+   Tags: #api-design, #user-experience, #abstraction
    Confidence: 85%
 ```
 
-### Manual save (fleeting → journal)
+### Manual save (fleeting → daily note)
 
 ```
-$ python scripts/zk_agent.py "也許可以用 webhook 做即時通知？要研究一下"
+$ python scripts/zk_agent.py "Maybe use webhooks for real-time notifications? Need to research."
 
-📝 Fleeting note → journal
-   Title: 研究 webhook 實現即時通知機制
-   Tags: #webhook, #real-time notification, #instant alert, #technical research
+📝 Fleeting note → daily note
+   Title: Research webhooks for real-time notifications
+   Tags: #webhook, #real-time, #research
    Confidence: 95%
 ```
 
-### Auto-detect scan (`/zk-scan`)
+### Auto-detect scan
 
 ```
-/zk-scan
+$ python scripts/detector.py  # or via /zk-scan in Claude Code
 
-Scanning conversation... found 4 candidates:
+Scanning conversation... found 2 candidates:
 
-📝 1/4: permanent
-「AI 對話中的 insight 需要系統性捕捉——這個痛點不限於特定工具用戶」
-存嗎？ (y/n/edit)
+📝 1/2: permanent
+"Systematic insight capture from AI conversations is a universal pain point — not limited to any specific tool's users."
+Save? (y/n)
 > y
 ✅ Saved → card
 
-📝 2/4: fleeting
-「也許可以用 webhook 做即時通知？」
-存嗎？ (y/n/edit)
+📝 2/2: fleeting
+"Maybe use webhooks for real-time notifications?"
+Save? (y/n)
 > y
-📝 Saved → journal
+📝 Saved → daily note
 
-Summary: 2 saved (1 card, 1 journal), 2 skipped
+Summary: 2 saved (1 card, 1 daily note)
 ```

@@ -4,7 +4,6 @@ Storage — unified interface for saving notes to any destination.
 Configuration via .env:
   STORAGE=heptabase          (default)
   STORAGE=obsidian
-  STORAGE=logseq
 
 Each backend implements: save_card(), save_fleeting(), search_related()
 """

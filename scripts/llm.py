@@ -7,9 +7,9 @@ Ollama, or any OpenAI-compatible endpoint.
 Configuration via .env:
   LLM_API_KEY=sk-xxx              (required)
   LLM_BASE_URL=https://...        (optional, defaults to OpenAI)
-  LLM_MODEL=gpt-4o-mini           (optional, defaults to gpt-4o-mini)
+  LLM_MODEL=gpt-4o-mini           (optional, default depends on provider)
 
-  # Shortcut: set ANTHROPIC_API_KEY instead to use Anthropic directly
+  # Shortcut: set ANTHROPIC_API_KEY to use Anthropic directly (defaults to Haiku)
 """
 
 import os

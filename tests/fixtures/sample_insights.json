@@ -1,26 +1,26 @@
 [
   {
-    "text": "當多個獨立產品缺乏整合時，orchestration layer 就是新的機會。誰能串起資料流和使用者流程，誰就掌握平台價值。",
+    "text": "When multiple independent products lack integration, the orchestration layer becomes the new opportunity. Whoever connects data flows and user journeys captures the platform value.",
     "expected_type": "permanent",
     "reason": "Own synthesized conclusion connecting multiple observations"
   },
   {
-    "text": "Shopify 做了 Sidekick，用一個 AI 助手串起商品管理、金流、行銷、Analytics。",
+    "text": "Shopify built Sidekick, an AI assistant that ties together product management, payments, marketing, and analytics into one interface.",
     "expected_type": "literature",
     "reason": "Referencing an external product's approach"
   },
   {
-    "text": "也許可以用 Hermes Agent 來做 ZK 自動分類？要查一下它的 skill 系統。",
+    "text": "Maybe I could use an agent framework for auto-classification? Need to look into skill systems and plugin architectures.",
     "expected_type": "fleeting",
     "reason": "Raw unprocessed thought, needs further exploration"
   },
   {
-    "text": "CSS 的本質是翻譯——把設計變成真的。MCP tool design 也是翻譯——把 API 變成用戶能用的流程。我的核心能力是翻譯。",
+    "text": "The essence of CSS is translation — turning design into reality. API design is also translation — turning complex systems into flows users can follow. My core skill is translation.",
     "expected_type": "permanent",
-    "reason": "Synthesized insight connecting CSS experience with new career direction"
+    "reason": "Synthesized insight connecting different domains through a unifying metaphor"
   },
   {
-    "text": "Hermes Agent 的 README 提到它支援 MCP server 整合，且有 agentskills.io 做開放 skill 標準。目前有 646 個 skills。",
+    "text": "The MCP (Model Context Protocol) specification supports server integration and has an open skill standard at agentskills.io with over 600 published skills.",
     "expected_type": "literature",
     "reason": "Factual reference from external documentation"
   }

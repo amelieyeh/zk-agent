@@ -67,13 +67,13 @@ async def save_note(text: str, source: str | None = None) -> dict:
     # Step 3: Route by note type
     if classification["note_type"] == "fleeting":
         # Fleeting → daily note / journal
-        ok = await store.save_fleeting(text, metadata["title"], metadata["tags"])
+        ok = await store.save_fleeting(metadata["title"], text, metadata["tags"])
         return {
             "classification": dict(classification),
             "metadata": dict(metadata),
             "related": [],
             "saved": None,
-            "journal": ok,
+            "fleeting_saved": ok,
         }
 
     # Literature/Permanent → card + related notes
@@ -88,7 +88,7 @@ async def save_note(text: str, source: str | None = None) -> dict:
         "metadata": dict(metadata),
         "related": related,
         "saved": save_result,
-        "journal": False,
+        "fleeting_saved": False,
     }
 
 
@@ -116,7 +116,7 @@ def main():
 
     note_type = result['classification']['note_type']
     if note_type == "fleeting":
-        print(f"\n📝 Fleeting note → journal")
+        print(f"\n📝 Fleeting note → daily note")
     else:
         print(f"\n✅ Saved as {note_type} note → card")
     print(f"   Title: {result['metadata']['title']}")

@@ -12,25 +12,28 @@ from detector import detect_insights
 
 
 SAMPLE_CONVERSATION = """
-User: 我最近在研究 agent 框架，發現 Hermes 和 Claude Code 的設計哲學很不同。
-Hermes 是 tool-first，先給你工具再讓你組合。Claude Code 是 conversation-first，
-對話本身就是介面。
+User: I've been comparing agent frameworks and found that tool-first vs
+conversation-first is a fundamental design difference. Some frameworks give
+you tools first and let you compose them. Others make the conversation itself
+the interface.
 
-Agent: 這兩種 approach 各有優缺點...
+Agent: Both approaches have trade-offs...
 
-User: 對，而且我覺得最好的 agent 其實是翻譯者——把複雜的 API 翻譯成人能理解的流程。
-不是取代人，是幫人跨越理解的鴻溝。
+User: Right, and I think the best agents are actually translators — they take
+complex APIs and translate them into flows humans can understand. Not replacing
+people, but bridging the comprehension gap.
 
-Agent: 這個觀點很有趣...
+Agent: That's an interesting perspective...
 
-User: 另外 Shopify 的 Sidekick 做得不錯，它用一個 AI 入口串起了商品管理、金流和行銷。
+User: Also, Shopify's Sidekick is a good example — it ties together product
+management, payments, and marketing through a single AI entry point.
 """
 
 EMPTY_CONVERSATION = """
-User: 幫我改一下那個 bug
-Agent: 好的，我看一下程式碼
-User: 改好了嗎
-Agent: 改好了，已經 commit
+User: Can you fix that bug?
+Agent: Sure, let me look at the code
+User: Is it done?
+Agent: Done, committed.
 """
 
 

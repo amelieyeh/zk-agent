@@ -2,7 +2,7 @@
 Heptabase MCP Client.
 
 Direct connection to Heptabase via Python MCP SDK.
-Token resolution: ~/.zk-agent/tokens/ → ~/.hermes/mcp-tokens/ → OAuth flow.
+Token resolution: ~/.zk-agent/tokens/ → OAuth flow.
 """
 
 import json
