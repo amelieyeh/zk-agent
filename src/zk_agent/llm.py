@@ -43,14 +43,23 @@ def _get_client() -> tuple[OpenAI, str]:
     )
 
 
-def chat(prompt: str, max_tokens: int = 500) -> str:
+def chat(
+    prompt: str,
+    max_tokens: int = 500,
+    system: str | None = None,
+) -> str:
     """Send a single prompt and return the response text."""
     client, model = _get_client()
+
+    messages: list[dict[str, str]] = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
 
     response = client.chat.completions.create(
         model=model,
         max_tokens=max_tokens,
-        messages=[{"role": "user", "content": prompt}],
+        messages=messages,
     )
 
     return response.choices[0].message.content.strip()

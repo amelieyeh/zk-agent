@@ -22,7 +22,12 @@ class NoteMetadata(TypedDict):
     related_notes: list[str]
 
 
-METADATA_PROMPT = """Given this insight and its classification, generate metadata.
+SYSTEM_PROMPT = """\
+You are a metadata generator for Zettelkasten notes. You produce concise titles \
+and useful tags. You respond with JSON only."""
+
+METADATA_PROMPT = """\
+Generate metadata for this Zettelkasten note.
 
 Classification: {note_type} (confidence: {confidence})
 Insight: {text}
@@ -50,17 +55,42 @@ def generate_metadata(
             text=text,
         ),
         max_tokens=200,
+        system=SYSTEM_PROMPT,
     )
-    if raw.startswith("```"):
-        raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-    parsed = json.loads(raw)
+
+    try:
+        parsed = _parse_llm_json(raw)
+    except (json.JSONDecodeError, KeyError):
+        parsed = {"title": text[:57] + "..." if len(text) > 60 else text, "tags": []}
+
+    title = parsed.get("title", text[:60])
+    if not isinstance(title, str):
+        title = str(title)
+
+    tags = parsed.get("tags", [])
+    if not isinstance(tags, list):
+        tags = []
+    tags = [str(t).lower() for t in tags if isinstance(t, (str, int, float))]
 
     return NoteMetadata(
-        title=parsed["title"],
-        tags=parsed["tags"],
+        title=title,
+        tags=tags,
         note_type=classification["note_type"],
         confidence=classification["confidence"],
         source=source,
         created_at=datetime.now(timezone.utc).isoformat(),
         related_notes=[],
     )
+
+
+def _parse_llm_json(raw: str) -> dict:
+    """Parse JSON from LLM response, handling common formatting issues."""
+    text = raw.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+
+    brace_end = text.rfind("}")
+    if brace_end != -1:
+        text = text[: brace_end + 1]
+
+    return json.loads(text)
