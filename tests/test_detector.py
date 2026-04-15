@@ -4,7 +4,8 @@ import os
 
 import pytest
 
-from zk_agent.detector import detect_insights
+from zk_agent.detector import detect_insights, _parse_llm_json_array
+from zk_agent.classifier import classify_note
 
 
 SAMPLE_CONVERSATION = """
@@ -33,6 +34,28 @@ Agent: Done, committed.
 """
 
 
+class TestParseJsonArray:
+    """Unit tests for JSON array parsing — no LLM needed."""
+
+    def test_parse_clean_array(self):
+        result = _parse_llm_json_array('[{"text": "x", "suggested_type": "fleeting", "reason": "y"}]')
+        assert len(result) == 1
+
+    def test_parse_empty_array(self):
+        result = _parse_llm_json_array("[]")
+        assert result == []
+
+    def test_parse_with_markdown_fences(self):
+        raw = '```json\n[{"text": "x", "suggested_type": "permanent", "reason": "y"}]\n```'
+        result = _parse_llm_json_array(raw)
+        assert len(result) == 1
+
+    def test_parse_with_trailing_text(self):
+        raw = '[{"text": "x", "suggested_type": "literature", "reason": "y"}]\n\nThese are the insights.'
+        result = _parse_llm_json_array(raw)
+        assert len(result) == 1
+
+
 @pytest.mark.skipif(
     not os.environ.get("ANTHROPIC_API_KEY") and not os.environ.get("LLM_API_KEY"),
     reason="No LLM API key set",
@@ -49,3 +72,21 @@ class TestDetector:
     def test_empty_for_routine_conversation(self):
         results = detect_insights(EMPTY_CONVERSATION)
         assert len(results) == 0
+
+    def test_detector_classifier_consistency(self):
+        """Detector suggested_type should match classifier result."""
+        results = detect_insights(SAMPLE_CONVERSATION)
+        assert len(results) >= 1
+        mismatches = []
+        for r in results:
+            classification = classify_note(r["text"])
+            if classification["note_type"] != r["suggested_type"]:
+                mismatches.append(
+                    f"Detector: {r['suggested_type']}, "
+                    f"Classifier: {classification['note_type']}, "
+                    f"Text: {r['text'][:60]}..."
+                )
+        assert not mismatches, (
+            f"{len(mismatches)} type mismatches between detector and classifier:\n"
+            + "\n".join(mismatches)
+        )
