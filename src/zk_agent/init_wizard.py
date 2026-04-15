@@ -57,7 +57,7 @@ def _verify_llm(config: dict) -> bool:
         os.environ["LLM_MODEL"] = config["llm_model"]
 
     try:
-        from llm import chat
+        from zk_agent.llm import chat
         result = chat("Respond with exactly: OK", max_tokens=10)
         return "OK" in result.upper()
     except Exception as e:
