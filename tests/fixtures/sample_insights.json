@@ -23,5 +23,40 @@
     "text": "The MCP (Model Context Protocol) specification supports server integration and has an open skill standard at agentskills.io with over 600 published skills.",
     "expected_type": "literature",
     "reason": "Factual reference from external documentation"
+  },
+  {
+    "text": "LangChain 的 LCEL 語法讓 chain 組合變得很直覺，但 debug 很痛苦，因為中間 state 不好追蹤。",
+    "expected_type": "literature",
+    "reason": "Observation about an external tool's trade-off"
+  },
+  {
+    "text": "或許可以在每次對話結束時自動掃描有價值的 insight？但不確定 false positive 會不會太多。",
+    "expected_type": "fleeting",
+    "reason": "Half-formed idea in Chinese with explicit uncertainty"
+  },
+  {
+    "text": "每個成功的 SaaS 平台最終都會面臨同一個問題：feature 數量超過使用者認知能力。此時 AI 不是加新功能，而是重組既有功能的入口。",
+    "expected_type": "permanent",
+    "reason": "Original framework connecting SaaS growth pattern to AI role"
+  },
+  {
+    "text": "Stripe published a blog post explaining how they reduced API latency by 30% through connection pooling and regional routing.",
+    "expected_type": "literature",
+    "reason": "Referencing a specific company's published technical finding"
+  },
+  {
+    "text": "I wonder if we should use Redis or Postgres for the job queue. Need to benchmark both.",
+    "expected_type": "fleeting",
+    "reason": "Open question with no conclusion, needs exploration"
+  },
+  {
+    "text": "Notion's API rate limits are 3 requests/second per integration. Their MCP server wraps the REST API and handles pagination internally.",
+    "expected_type": "literature",
+    "reason": "Factual details about external API, citable"
+  },
+  {
+    "text": "The pattern of disaggregation followed by re-aggregation keeps repeating in tech: mainframes → PCs → cloud, monoliths → microservices → platforms. The value always shifts to whoever can re-bundle coherently.",
+    "expected_type": "permanent",
+    "reason": "Cross-domain synthesis identifying a recurring historical pattern"
   }
 ]
