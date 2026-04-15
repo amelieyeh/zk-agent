@@ -9,6 +9,7 @@ import json
 from typing import TypedDict
 
 from zk_agent.llm import chat
+from zk_agent.note_types import DEFINITIONS, BOUNDARY_RULES
 
 
 class InsightCandidate(TypedDict):
@@ -17,16 +18,34 @@ class InsightCandidate(TypedDict):
     reason: str
 
 
-DETECT_PROMPT = """You are a Zettelkasten expert scanning a conversation for valuable insights worth preserving.
+SYSTEM_PROMPT = """\
+You are a Zettelkasten expert scanning conversations for valuable insights. \
+You respond with JSON only."""
 
-Identify 0-5 distinct insights from this conversation that are worth saving as notes. Look for:
-- Original conclusions or syntheses (permanent notes)
-- References to external products, articles, or ideas (literature notes)
-- Interesting questions or half-formed ideas worth developing (fleeting notes)
+DETECT_PROMPT = """\
+Scan this conversation for distinct insights worth saving as Zettelkasten notes.
 
-Skip: greetings, small talk, task coordination, debugging output, code snippets, routine decisions.
+## Note type definitions
 
-Respond with JSON only, no markdown fences:
+{definitions}
+
+## Boundary rules
+
+{boundary_rules}
+
+## What to extract
+
+- Original conclusions or syntheses (→ permanent)
+- References to external products, articles, or ideas (→ literature)
+- Interesting questions or half-formed ideas worth developing (→ fleeting)
+
+## What to skip
+
+Greetings, small talk, task coordination, debugging output, code snippets, routine decisions.
+
+## Output
+
+Return 0-5 insights as JSON only, no markdown fences:
 [{{"text": "the insight in the speaker's own words (quote or close paraphrase)", "suggested_type": "fleeting|literature|permanent", "reason": "why this is worth saving"}}]
 
 Return an empty array [] if nothing is worth saving.
@@ -35,15 +54,35 @@ Conversation:
 {conversation}"""
 
 
+def _parse_llm_json_array(raw: str) -> list[dict]:
+    """Parse JSON array from LLM response, handling common formatting issues."""
+    text = raw.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+
+    # Strip trailing text after JSON array
+    bracket_end = text.rfind("]")
+    if bracket_end != -1:
+        text = text[: bracket_end + 1]
+
+    return json.loads(text)
+
+
 def detect_insights(conversation: str) -> list[InsightCandidate]:
     """Scan conversation text for ZK-worthy insights."""
-    raw = chat(DETECT_PROMPT.format(conversation=conversation), max_tokens=1000)
-    if raw.startswith("```"):
-        raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+    raw = chat(
+        DETECT_PROMPT.format(
+            conversation=conversation,
+            definitions=DEFINITIONS,
+            boundary_rules=BOUNDARY_RULES,
+        ),
+        max_tokens=1000,
+        system=SYSTEM_PROMPT,
+    )
 
-    # LLM sometimes appends explanation after the JSON array
-    bracket_end = raw.rfind("]")
-    if bracket_end != -1:
-        raw = raw[: bracket_end + 1]
-    candidates = json.loads(raw)
+    try:
+        candidates = _parse_llm_json_array(raw)
+    except (json.JSONDecodeError, KeyError):
+        return []
+
     return [InsightCandidate(**c) for c in candidates]
