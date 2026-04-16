@@ -9,6 +9,24 @@ description = "Classify conversation insights into Zettelkasten notes and save t
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
+authors = [
+    { name = "Amelie Yeh", email = "amelie@kaik.com" },
+]
+keywords = ["zettelkasten", "ai", "note-taking", "classification", "heptabase", "obsidian", "mcp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Text Processing :: General",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/amelieyeh/zk-agent"
+Repository = "https://github.com/amelieyeh/zk-agent"
+Issues = "https://github.com/amelieyeh/zk-agent/issues"
 dependencies = [
     "openai>=1.0.0",
     "mcp>=1.27.0",

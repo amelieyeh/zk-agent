@@ -107,9 +107,10 @@ Conversation text
 ## Project Structure
 
 ```
-scripts/
-  zk_agent.py            — Main pipeline (classify → route → save)
-  classifier.py          — ZK note type classification
+src/zk_agent/
+  cli.py                 — CLI entry point (zk-agent command)
+  classifier.py          — ZK note type classification (few-shot, with retry)
+  note_types.py          — Shared type definitions and boundary rules
   metadata_generator.py  — Title + tags generation
   detector.py            — Conversation insight scanner
   llm.py                 — Unified LLM client (any OpenAI-compatible provider)
@@ -122,7 +123,7 @@ scripts/
   init_wizard.py         — Interactive setup wizard
   setup.py               — Heptabase OAuth re-authorization
   env.py                 — .env file loader (developer override)
-tests/                   — 8 tests (classifier 5/5 + detector 2/2)
+tests/                   — 26 tests (classifier + detector + parse/validation)
 ```
 
 ## Status
