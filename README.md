@@ -37,7 +37,7 @@ It guides you through:
 
 Config is saved to `~/.zk-agent/config.json`.
 
-> For developers: `.env` in the project root is also supported and takes priority over config.
+> For developers: `.env` in the project root is also supported, but `~/.zk-agent/config.json` takes priority.
 
 ### Usage
 
@@ -57,20 +57,22 @@ Works with any MCP-capable AI tool (e.g. Claude Code) for a more integrated expe
 ```
 $ zk-agent "Good API design is like good translation — it lets users accomplish goals without understanding the underlying complexity."
 
-✅ Saved as permanent note → card
+✅ Saved as permanent note
    Title: Good API Design as Translation
    Tags: #api-design, #user-experience, #abstraction
    Confidence: 85%
+   Reasoning: Original synthesis connecting API design to translation as a unifying metaphor
 ```
 
 **Fleeting note → daily note:**
 ```
 $ zk-agent "Maybe use webhooks for real-time notifications? Need to research."
 
-📝 Fleeting note → daily note
+📝 Fleeting note → saved
    Title: Research webhooks for real-time notifications
    Tags: #webhook, #real-time, #research
    Confidence: 95%
+   Reasoning: Unprocessed idea with open question, needs further exploration
 ```
 
 ## Classification Criteria

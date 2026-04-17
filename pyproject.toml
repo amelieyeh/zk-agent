@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 authors = [
-    { name = "Amelie Yeh", email = "amelie@kaik.com" },
+    { name = "Amelie Yeh" },
 ]
 keywords = ["zettelkasten", "ai", "note-taking", "classification", "heptabase", "obsidian", "mcp"]
 classifiers = [
@@ -23,14 +23,15 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 
-[project.urls]
-Homepage = "https://github.com/amelieyeh/zk-agent"
-Repository = "https://github.com/amelieyeh/zk-agent"
-Issues = "https://github.com/amelieyeh/zk-agent/issues"
 dependencies = [
     "openai>=1.0.0",
     "mcp>=1.27.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/amelieyeh/zk-agent"
+Repository = "https://github.com/amelieyeh/zk-agent"
+Issues = "https://github.com/amelieyeh/zk-agent/issues"
 
 [project.optional-dependencies]
 dev = [

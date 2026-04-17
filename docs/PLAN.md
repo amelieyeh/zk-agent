@@ -60,9 +60,9 @@ Manual trigger mode: user provides text, agent classifies + saves.
 | T5 | `zk_agent.py` — full pipeline | ✅ | Fleeting → daily note, lit/perm → card |
 | T6 | Note formatting | ✅ | Markdown card format in `_format_card()` |
 | T7 | Fleeting note routing | ✅ | Appends under `## 🧠 ZK Fleeting Notes` section |
-| T8 | Tests | ✅ | 8/8 pass (classifier 5/5 + detector 2/2) |
-| T9 | Packaging | Pending | `SKILL.md` + `pyproject.toml` ready |
-| T10 | Publish to PyPI | Pending | |
+| T8 | Tests | ✅ | 26 pass (12 classifier fixtures + 7 detector + 6 parse/validation + 1 structure) |
+| T9 | Packaging | ✅ | `pyproject.toml` + `pip install zk-agent` + CLI entry point |
+| T10 | Publish to PyPI | Skipped | GitHub install sufficient: `pipx install git+https://github.com/amelieyeh/zk-agent.git` |
 
 ### Phase 2 — Auto-detect (✅ core complete)
 
@@ -130,10 +130,11 @@ class NoteMetadata(TypedDict):
 ```
 $ zk-agent "Good API design is like good translation — it lets users accomplish goals without understanding the underlying complexity."
 
-✅ Saved as permanent note → card
+✅ Saved as permanent note
    Title: Good API Design as Translation
    Tags: #api-design, #user-experience, #abstraction
    Confidence: 85%
+   Reasoning: Original synthesis connecting API design to translation as a unifying metaphor
 ```
 
 ### Manual save (fleeting → daily note)
@@ -141,30 +142,33 @@ $ zk-agent "Good API design is like good translation — it lets users accomplis
 ```
 $ zk-agent "Maybe use webhooks for real-time notifications? Need to research."
 
-📝 Fleeting note → daily note
+📝 Fleeting note → saved
    Title: Research webhooks for real-time notifications
    Tags: #webhook, #real-time, #research
    Confidence: 95%
+   Reasoning: Unprocessed idea with open question, needs further exploration
 ```
 
 ### Auto-detect scan
 
 ```
-$ zk-agent scan  # or via /zk-scan in Claude Code
+Via /zk-scan in Claude Code:
 
-Scanning conversation... found 2 candidates:
+📝 Insight 1/2: permanent
+「Systematic insight capture from AI conversations is a universal pain point — not limited to any specific tool's users.」
+Reason: Original synthesis about a universal problem pattern
 
-📝 1/2: permanent
-"Systematic insight capture from AI conversations is a universal pain point — not limited to any specific tool's users."
-Save? (y/n)
+存嗎？ (y/n)
 > y
-✅ Saved → card
+✅ Saved as permanent note
 
-📝 2/2: fleeting
-"Maybe use webhooks for real-time notifications?"
-Save? (y/n)
+📝 Insight 2/2: fleeting
+「Maybe use webhooks for real-time notifications?」
+Reason: Unprocessed idea, needs research
+
+存嗎？ (y/n)
 > y
-📝 Saved → daily note
+📝 Fleeting note → saved
 
 Summary: 2 saved (1 card, 1 daily note)
 ```
