@@ -7,7 +7,7 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 - **ZK Classification**: LLM classifies notes as Fleeting, Literature, or Permanent
 - **Smart Routing**: Fleeting → daily note, Literature/Permanent → cards (auto-tagged `#fleeting`, `#literature`, `#permanent`)
 - **Multi-destination**: Heptabase, Obsidian
-- **Any LLM Provider**: OpenAI, Anthropic, OpenRouter, Ollama, or any OpenAI-compatible endpoint
+- **Any LLM Provider**: OpenAI, Anthropic, Google Gemini, OpenRouter, Ollama, or any OpenAI-compatible endpoint
 - **Auto Metadata**: Generates title and tags in the same language as the input
 - **Smart Linking**: Searches existing notes for related content
 - **Conversation Scanner**: Auto-detect insights worth saving from any conversation
@@ -32,7 +32,7 @@ zk-agent init
 ```
 
 It guides you through:
-1. **AI provider** — Anthropic, OpenAI, OpenRouter, Ollama, or any OpenAI-compatible endpoint
+1. **AI provider** — Anthropic, OpenAI, Google Gemini, OpenRouter, Ollama, or any OpenAI-compatible endpoint
 2. **Note storage** — Heptabase (OAuth), Obsidian (local vault), or output-only
 
 Config is saved to `~/.zk-agent/config.json`.

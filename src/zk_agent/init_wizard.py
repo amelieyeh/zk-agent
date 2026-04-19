@@ -72,6 +72,7 @@ def _setup_llm() -> dict:
     providers = [
         "Anthropic (Claude)",
         "OpenAI (GPT)",
+        "Google (Gemini)",
         "OpenRouter (any model)",
         "Ollama (local)",
         "Other (OpenAI-compatible)",
@@ -89,20 +90,26 @@ def _setup_llm() -> dict:
         config["llm_api_key"] = key
         config["llm_model"] = "gpt-4o-mini"
 
-    elif choice == 2:  # OpenRouter
+    elif choice == 2:  # Google Gemini
+        key = _prompt_input("Google AI API key")
+        config["llm_api_key"] = key
+        config["llm_base_url"] = "https://generativelanguage.googleapis.com/v1beta/openai/"
+        config["llm_model"] = "gemini-2.0-flash"
+
+    elif choice == 3:  # OpenRouter
         key = _prompt_input("OpenRouter API key")
         config["llm_api_key"] = key
         config["llm_base_url"] = "https://openrouter.ai/api/v1"
         model = _prompt_input("Model (e.g. anthropic/claude-haiku-4-5-20251001)")
         config["llm_model"] = model
 
-    elif choice == 3:  # Ollama
+    elif choice == 4:  # Ollama
         config["llm_api_key"] = "ollama"
         config["llm_base_url"] = "http://localhost:11434/v1"
         model = _prompt_input("Model name (e.g. llama3, mistral)")
         config["llm_model"] = model
 
-    elif choice == 4:  # Other
+    elif choice == 5:  # Other
         key = _prompt_input("API key")
         config["llm_api_key"] = key
         base_url = _prompt_input("Base URL (e.g. https://api.example.com/v1)")
