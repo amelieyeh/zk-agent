@@ -7,7 +7,7 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 **Runtime:** Python 3.11+ with OpenAI-compatible SDK + MCP SDK
 **Classification:** Any LLM via OpenAI-compatible API
 **Storage:** Heptabase (MCP), Obsidian (local Markdown), or output-only
-**Publish target:** PyPI
+**Install:** `pipx install git+https://github.com/amelieyeh/zk-agent.git`
 
 ## Architecture
 
@@ -41,7 +41,7 @@ Insight Detector (LLM API)
 
 Key decisions:
 - **Self-contained OAuth** — built-in OAuth flow, no external dependencies. Tokens at `~/.zk-agent/tokens/`
-- **Any LLM provider** — unified `llm.py` interface via OpenAI-compatible SDK (OpenAI, Anthropic, OpenRouter, Ollama)
+- **Any LLM provider** — unified `llm.py` interface via OpenAI-compatible SDK (OpenAI, Anthropic, Google Gemini, OpenRouter, Ollama)
 - **Fleeting → daily note, not card** — reduces card volume, fleeting notes live in daily note under dedicated section
 - **No Heptabase tag API** — MCP doesn't expose tag management, note type indicated in card metadata text
 
@@ -54,7 +54,7 @@ Manual trigger mode: user provides text, agent classifies + saves.
 | # | Task | Status | Notes |
 |---|------|--------|-------|
 | T1 | Heptabase MCP setup + self-contained OAuth | ✅ | `zk-agent setup` triggers browser OAuth |
-| T2 | `classifier.py` — ZK classification via LLM | ✅ | 100% accuracy on 5 fixtures |
+| T2 | `classifier.py` — ZK classification via LLM | ✅ | 100% accuracy on 12 fixtures (EN + ZH, few-shot prompt) |
 | T3 | `metadata_generator.py` — title + tags generation | ✅ | Same-language titles via LLM |
 | T4 | Semantic search for related notes | ✅ | Integrated in storage backends |
 | T5 | `zk_agent.py` — full pipeline | ✅ | Fleeting → daily note, lit/perm → card |
@@ -74,7 +74,7 @@ Scan conversations for insights worth saving, present candidates for approval.
 | D2 | `/zk` Claude Code command — manual save | ✅ | Works in any session |
 | D3 | `/zk-scan` Claude Code command — batch scan + select | ✅ | Scan conversation, approve/reject each |
 | D4 | End-of-day scan integration | ✅ | Can be hooked into any CLI workflow |
-| D5 | Multi-provider LLM support | ✅ | `llm.py` — OpenAI, Anthropic, OpenRouter, Ollama |
+| D5 | Multi-provider LLM support | ✅ | `llm.py` — OpenAI, Anthropic, Google Gemini, OpenRouter, Ollama |
 
 ### Phase 3 — Multi-destination (✅ core complete)
 
@@ -90,7 +90,7 @@ Pluggable storage backends via `NoteStorage` protocol.
 
 ### Classifier: LLM API (not rules)
 
-ZK note types have fuzzy boundaries that need semantic understanding. Any OpenAI-compatible LLM works. The prompt lives in `classifier.py` and can be tuned without changing architecture. Provider configured via `.env`.
+ZK note types have fuzzy boundaries that need semantic understanding. Any OpenAI-compatible LLM works. The prompt lives in `classifier.py` and can be tuned without changing architecture. Provider configured via `zk-agent init`, `~/.zk-agent/config.json`, or `.env`.
 
 ### MCP: Direct Python SDK connection
 

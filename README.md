@@ -18,10 +18,10 @@ AI agent that classifies conversation insights into Zettelkasten note types and 
 ### Install
 
 ```bash
-pipx install zk-agent
+pipx install git+https://github.com/amelieyeh/zk-agent.git
 ```
 
-Or with pip: `pip install zk-agent`
+Or with pip: `pip install git+https://github.com/amelieyeh/zk-agent.git`
 
 ### Setup
 
