@@ -91,3 +91,85 @@ async def get_journal_today(date: str) -> str:
                 "get_journal_range", {"startDate": date, "endDate": date}
             )
             return result.content[0].text
+
+
+async def search_whiteboards(query: str) -> list[dict]:
+    """Search for whiteboards by name or keyword.
+
+    Returns list of dicts with at least 'id' and 'name' keys.
+    Heptabase returns XML; we parse <whiteboard id="..." name="..." /> tags.
+    """
+    import re
+
+    async with await _get_session() as (read, write, _):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            result = await session.call_tool(
+                "search_whiteboards", {"keywords": query.split()}
+            )
+            text = result.content[0].text
+
+            # Parse XML-style <whiteboard id="..." name="..." /> tags
+            boards = []
+            for match in re.finditer(
+                r'<whiteboard\s+id="([^"]+)"\s+name="([^"]+)"', text
+            ):
+                boards.append({"id": match.group(1), "name": match.group(2)})
+            return boards
+
+
+async def get_whiteboard_with_objects(whiteboard_id: str) -> dict | None:
+    """Get full whiteboard structure: cards, positions, sections, connections.
+
+    Heptabase returns XML. We parse <card> tags to extract objects list.
+    Returns dict with 'name', 'objects' list, and 'raw' XML text.
+    """
+    import re
+
+    async with await _get_session() as (read, write, _):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            result = await session.call_tool(
+                "get_whiteboard_with_objects",
+                {"whiteboardId": whiteboard_id},
+            )
+            text = result.content[0].text
+
+            # Parse whiteboard name
+            wb_match = re.search(r'<whiteboard[^>]+name="([^"]+)"', text)
+            name = wb_match.group(1) if wb_match else ""
+
+            # Parse card objects
+            objects = []
+            for match in re.finditer(
+                r'<card\s+id="([^"]+)"\s+title="([^"]+)"', text
+            ):
+                objects.append({
+                    "id": match.group(1),
+                    "title": match.group(2),
+                })
+
+            return {"name": name, "objects": objects, "raw": text}
+
+
+async def get_object(object_id: str, object_type: str = "card") -> str | None:
+    """Get full content of any Heptabase object (card, journal, etc).
+
+    Returns the content text, or None on failure.
+    """
+    import re
+
+    async with await _get_session() as (read, write, _):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            result = await session.call_tool(
+                "get_object",
+                {"objectId": object_id, "objectType": object_type},
+            )
+            text = result.content[0].text
+
+            # Extract content from <chunk> tags if present
+            chunks = re.findall(r'<chunk[^>]*>\s*(.*?)\s*</chunk>', text, re.DOTALL)
+            if chunks:
+                return "\n".join(chunks)
+            return text

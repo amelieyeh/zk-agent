@@ -117,24 +117,41 @@ def _validate_classification(parsed: dict) -> Classification:
     )
 
 
-def classify_note(text: str) -> Classification:
-    """Classify text into a Zettelkasten note type."""
+CONTEXT_PREFIX = """\
+You are classifying an insight within a specific project context.
+Use this background knowledge to make a more informed classification.
+
+## Project Context
+
+{context}
+
+---
+
+"""
+
+
+def classify_note(text: str, context: str | None = None) -> Classification:
+    """Classify text into a Zettelkasten note type.
+
+    Args:
+        text: The insight to classify.
+        context: Optional project context (from a Heptabase whiteboard)
+            that helps the LLM make more informed classification decisions.
+    """
+    prompt = CLASSIFY_PROMPT.format(
+        text=text, definitions=DEFINITIONS, boundary_rules=BOUNDARY_RULES
+    )
+    if context:
+        prompt = CONTEXT_PREFIX.format(context=context) + prompt
+
     try:
-        raw = chat(
-            CLASSIFY_PROMPT.format(text=text, definitions=DEFINITIONS, boundary_rules=BOUNDARY_RULES),
-            max_tokens=200,
-            system=SYSTEM_PROMPT,
-        )
+        raw = chat(prompt, max_tokens=200, system=SYSTEM_PROMPT)
         parsed = _parse_llm_json(raw)
         return _validate_classification(parsed)
     except (json.JSONDecodeError, KeyError):
         # Retry once on parse failure
         try:
-            raw = chat(
-                CLASSIFY_PROMPT.format(text=text, definitions=DEFINITIONS, boundary_rules=BOUNDARY_RULES),
-                max_tokens=200,
-                system=SYSTEM_PROMPT,
-            )
+            raw = chat(prompt, max_tokens=200, system=SYSTEM_PROMPT)
             parsed = _parse_llm_json(raw)
             return _validate_classification(parsed)
         except Exception:

@@ -68,17 +68,38 @@ def _parse_llm_json_array(raw: str) -> list[dict]:
     return json.loads(text)
 
 
-def detect_insights(conversation: str) -> list[InsightCandidate]:
-    """Scan conversation text for ZK-worthy insights."""
-    raw = chat(
-        DETECT_PROMPT.format(
-            conversation=conversation,
-            definitions=DEFINITIONS,
-            boundary_rules=BOUNDARY_RULES,
-        ),
-        max_tokens=1000,
-        system=SYSTEM_PROMPT,
+CONTEXT_PREFIX = """\
+You are scanning a conversation within a specific project context.
+Pay special attention to insights related to this project.
+
+## Project Context
+
+{context}
+
+---
+
+"""
+
+
+def detect_insights(
+    conversation: str, context: str | None = None
+) -> list[InsightCandidate]:
+    """Scan conversation text for ZK-worthy insights.
+
+    Args:
+        conversation: The conversation text to scan.
+        context: Optional project context (from a Heptabase whiteboard)
+            that helps focus detection on scope-relevant insights.
+    """
+    prompt = DETECT_PROMPT.format(
+        conversation=conversation,
+        definitions=DEFINITIONS,
+        boundary_rules=BOUNDARY_RULES,
     )
+    if context:
+        prompt = CONTEXT_PREFIX.format(context=context) + prompt
+
+    raw = chat(prompt, max_tokens=1000, system=SYSTEM_PROMPT)
 
     try:
         candidates = _parse_llm_json_array(raw)

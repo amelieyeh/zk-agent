@@ -56,12 +56,34 @@ def _format_card(text: str, metadata: NoteMetadata) -> str:
 {related_str}"""
 
 
-async def save_note(text: str, source: str | None = None) -> dict:
+async def save_note(
+    text: str,
+    source: str | None = None,
+    scope_name: str | None = None,
+) -> dict:
     """Full ZK save pipeline."""
     store = get_storage()
 
-    classification = classify_note(text)
-    metadata = generate_metadata(text, classification, source=source)
+    # Load scope context if specified
+    context = None
+    scope_tags = None
+    if scope_name:
+        from zk_agent.scope import load_scope
+        from zk_agent.context import build_context
+
+        scope = load_scope(scope_name)
+        if scope:
+            context = await build_context(scope)
+            scope_tags = [scope["tags_prefix"]]
+            if context:
+                print(f"   Scope: {scope['name']} (whiteboard loaded)", flush=True)
+            else:
+                print(f"   Scope: {scope['name']} (whiteboard not found, tags only)", flush=True)
+        else:
+            print(f"   ⚠ Scope '{scope_name}' not found in ~/.zk-agent/scopes/", flush=True)
+
+    classification = classify_note(text, context=context)
+    metadata = generate_metadata(text, classification, source=source, scope_tags=scope_tags)
 
     if classification["note_type"] == "fleeting":
         if store:
@@ -113,17 +135,25 @@ def main():
         print("  zk-agent setup                   — Re-authorize Heptabase OAuth")
         print('  zk-agent "insight text"           — Save an insight')
         print('  zk-agent "text" --source <url>    — Save with source attribution')
+        print('  zk-agent "text" --scope <name>    — Save with project context')
         sys.exit(1)
 
     args = sys.argv[1:]
     source = None
+    scope_name = None
+
     if "--source" in args:
         idx = args.index("--source")
         source = args[idx + 1]
         args = args[:idx] + args[idx + 2:]
 
+    if "--scope" in args:
+        idx = args.index("--scope")
+        scope_name = args[idx + 1]
+        args = args[:idx] + args[idx + 2:]
+
     text = " ".join(args)
-    result = asyncio.run(save_note(text, source=source))
+    result = asyncio.run(save_note(text, source=source, scope_name=scope_name))
 
     note_type = result['classification']['note_type']
     has_storage = result.get("saved") is not None or result.get("fleeting_saved")

@@ -23,6 +23,14 @@ async def run_setup():
             print("Setup cancelled.")
             return
 
+    # Clear old client info so OAuth re-registers with the new redirect_uri.
+    # Each setup picks a random port, so the old registered redirect_uri won't match.
+    from zk_agent.oauth import OWN_TOKEN_DIR
+    for f in ["heptabase.json", "heptabase.client.json"]:
+        p = OWN_TOKEN_DIR / f
+        if p.exists():
+            p.unlink()
+
     print("Starting Heptabase OAuth setup...\n")
 
     # Start callback server
@@ -32,7 +40,7 @@ async def run_setup():
 
     try:
         # Build OAuth provider — triggers browser flow on first MCP request
-        provider = build_oauth_provider(port)
+        provider = build_oauth_provider(port, fresh=True)
 
         # Make a test connection to trigger the OAuth flow
         async with streamablehttp_client(

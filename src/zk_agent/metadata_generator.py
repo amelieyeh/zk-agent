@@ -46,6 +46,7 @@ def generate_metadata(
     text: str,
     classification: dict,
     source: str | None = None,
+    scope_tags: list[str] | None = None,
 ) -> NoteMetadata:
     """Generate structured metadata for a note."""
     raw = chat(
@@ -71,6 +72,13 @@ def generate_metadata(
     if not isinstance(tags, list):
         tags = []
     tags = [str(t).lower() for t in tags if isinstance(t, (str, int, float))]
+
+    # Prepend scope tags (e.g. ["french"] from scope.tags_prefix)
+    if scope_tags:
+        existing = set(tags)
+        for st in reversed(scope_tags):
+            if st.lower() not in existing:
+                tags.insert(0, st.lower())
 
     return NoteMetadata(
         title=title,

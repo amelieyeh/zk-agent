@@ -32,8 +32,9 @@ HERMES_TOKEN_DIR = Path.home() / ".hermes" / "mcp-tokens"
 class ZKAgentTokenStorage(TokenStorage):
     """File-based token storage with Hermes fallback."""
 
-    def __init__(self):
+    def __init__(self, skip_hermes: bool = False):
         OWN_TOKEN_DIR.mkdir(parents=True, exist_ok=True)
+        self._skip_hermes = skip_hermes
 
     def _read_json(self, path: Path) -> dict | None:
         if path.exists():
@@ -52,25 +53,27 @@ class ZKAgentTokenStorage(TokenStorage):
         if data:
             return OAuthToken(**data)
         # Hermes fallback
-        data = self._read_json(HERMES_TOKEN_DIR / "heptabase.json")
-        if data:
-            return OAuthToken(**data)
+        if not self._skip_hermes:
+            data = self._read_json(HERMES_TOKEN_DIR / "heptabase.json")
+            if data:
+                return OAuthToken(**data)
         return None
 
     async def set_tokens(self, tokens: OAuthToken) -> None:
-        self._write_json(OWN_TOKEN_DIR / "heptabase.json", tokens.model_dump(exclude_none=True))
+        self._write_json(OWN_TOKEN_DIR / "heptabase.json", tokens.model_dump(mode="json", exclude_none=True))
 
     async def get_client_info(self) -> OAuthClientInformationFull | None:
         data = self._read_json(OWN_TOKEN_DIR / "heptabase.client.json")
         if data:
             return OAuthClientInformationFull(**data)
-        data = self._read_json(HERMES_TOKEN_DIR / "heptabase.client.json")
-        if data:
-            return OAuthClientInformationFull(**data)
+        if not self._skip_hermes:
+            data = self._read_json(HERMES_TOKEN_DIR / "heptabase.client.json")
+            if data:
+                return OAuthClientInformationFull(**data)
         return None
 
     async def set_client_info(self, info: OAuthClientInformationFull) -> None:
-        self._write_json(OWN_TOKEN_DIR / "heptabase.client.json", info.model_dump(exclude_none=True))
+        self._write_json(OWN_TOKEN_DIR / "heptabase.client.json", info.model_dump(mode="json", exclude_none=True))
 
 
 # ── OAuth Callback Server ──────────────────────────────────────────
@@ -140,9 +143,14 @@ def get_token_status() -> dict:
     return {"valid": False, "source": None, "expires_at": None}
 
 
-def build_oauth_provider(callback_port: int) -> OAuthClientProvider:
-    """Build an OAuthClientProvider for Heptabase MCP."""
-    storage = ZKAgentTokenStorage()
+def build_oauth_provider(callback_port: int, fresh: bool = False) -> OAuthClientProvider:
+    """Build an OAuthClientProvider for Heptabase MCP.
+
+    Args:
+        callback_port: Port for the OAuth redirect callback server.
+        fresh: If True, skip Hermes fallback and force fresh registration.
+    """
+    storage = ZKAgentTokenStorage(skip_hermes=fresh)
     client_metadata = OAuthClientMetadata(
         redirect_uris=[f"http://127.0.0.1:{callback_port}/callback"],
         grant_types=["authorization_code", "refresh_token"],
