@@ -17,7 +17,7 @@ async def run_setup():
     status = get_token_status()
 
     if status["valid"]:
-        print(f"Existing token found (source: {status['source']})")
+        print("Existing token found.")
         answer = input("Re-authorize? (y/n): ").strip().lower()
         if answer != "y":
             print("Setup cancelled.")
