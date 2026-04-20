@@ -23,7 +23,7 @@ zk-agent --scope learning-french "subjunctif seems to only be used in formal con
 - **Any LLM Provider**: OpenAI, Anthropic, Google Gemini, OpenRouter, Ollama, or any OpenAI-compatible endpoint
 - **Auto Metadata**: Generates title and tags in the same language as the input
 - **Smart Linking**: Searches existing notes for related content
-- **Conversation Scanner**: Auto-detect insights worth saving from any conversation
+- **Conversation Scanner**: Python API to detect insights from conversation text (for integration with AI tools)
 - **Multi-language**: Works with Chinese, English, or mixed-language input
 
 ## Quick Start
@@ -65,7 +65,22 @@ zk-agent "Insight from article" --source "https://example.com/article"
 zk-agent --scope learning-french "subjunctif seems formal only"
 ```
 
-Works with any MCP-capable AI tool (e.g. Claude Code) for a more integrated experience.
+### Using with Claude Code (or other AI tools)
+
+The `detector.py` module provides a Python API for scanning conversation text:
+
+```python
+from zk_agent.detector import detect_insights
+
+candidates = detect_insights("your conversation text here")
+# Returns 0-5 InsightCandidate dicts with text, suggested_type, reason
+```
+
+This is a building block — you integrate it into your AI tool's workflow. For example, in Claude Code you can tell Claude:
+
+> "When our conversation reaches a natural stopping point, scan it for insights worth saving as Zettelkasten notes."
+
+Claude can then call the detector, show you the candidates, and save the ones you approve. The auto-scanning behavior is not built into the CLI — it lives in your AI tool's configuration.
 
 ### Examples
 
@@ -175,7 +190,7 @@ Storage backends:
   obsidian   → local .md files (ZK-Agent/ + Daily Notes/)
 ```
 
-Auto-detect mode:
+Conversation scanning (via Python API, for AI tool integration):
 ```
 Conversation text
   → [Scope?] → load project context
@@ -212,7 +227,7 @@ tests/                   — 26 tests (classifier + detector + parse/validation)
 
 **v1 — Core pipeline**: ✅ Classify → metadata → route → save
 
-**v1 — Auto-detect**: ✅ Conversation scanner + `/zk-scan`
+**v1 — Conversation scanner**: ✅ Python API for detecting insights from conversation text
 
 **v1 — Multi-destination**: ✅ Heptabase + Obsidian
 
