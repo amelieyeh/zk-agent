@@ -1,4 +1,4 @@
-# ZK Agent — Implementation Plan
+# ZK Agent — Architecture & Design
 
 ## Overview
 
@@ -29,7 +29,7 @@ Storage Backend (user-configured)
     └── (none)     → output Markdown only
 ```
 
-Auto-detect flow (Phase 2):
+Auto-detect flow:
 ```
 Conversation text
     ↓
@@ -39,58 +39,11 @@ Insight Detector (LLM API)
     → Each approved insight runs through the save pipeline
 ```
 
-Key decisions:
-- **Self-contained OAuth** — built-in OAuth flow, no external dependencies. Tokens at `~/.zk-agent/tokens/`
-- **Any LLM provider** — unified `llm.py` interface via OpenAI-compatible SDK (OpenAI, Anthropic, Google Gemini, OpenRouter, Ollama)
-- **Fleeting → daily note, not card** — reduces card volume, fleeting notes live in daily note under dedicated section
-- **No Heptabase tag API** — MCP doesn't expose tag management, note type indicated in card metadata text
+## Key Design Decisions
 
-## Phases
+### Classifier: few-shot LLM prompt (not rules)
 
-### Phase 1 — MVP (✅ complete)
-
-Manual trigger mode: user provides text, agent classifies + saves.
-
-| # | Task | Status | Notes |
-|---|------|--------|-------|
-| T1 | Heptabase MCP setup + self-contained OAuth | ✅ | `zk-agent setup` triggers browser OAuth |
-| T2 | `classifier.py` — ZK classification via LLM | ✅ | 100% accuracy on 12 fixtures (EN + ZH, few-shot prompt) |
-| T3 | `metadata_generator.py` — title + tags generation | ✅ | Same-language titles via LLM |
-| T4 | Semantic search for related notes | ✅ | Integrated in storage backends |
-| T5 | `zk_agent.py` — full pipeline | ✅ | Fleeting → daily note, lit/perm → card |
-| T6 | Note formatting | ✅ | Markdown card format in `_format_card()` |
-| T7 | Fleeting note routing | ✅ | Appends under `## 🧠 ZK Fleeting Notes` section |
-| T8 | Tests | ✅ | 26 pass (12 classifier fixtures + 7 detector + 6 parse/validation + 1 structure) |
-| T9 | Packaging | ✅ | `pyproject.toml` + `pip install zk-agent` + CLI entry point |
-| T10 | Publish to PyPI | Skipped | GitHub install sufficient: `pipx install git+https://github.com/amelieyeh/zk-agent.git` |
-
-### Phase 2 — Auto-detect (✅ core complete)
-
-Scan conversations for insights worth saving, present candidates for approval.
-
-| # | Task | Status | Notes |
-|---|------|--------|-------|
-| D1 | `detector.py` — scan conversation for ZK-worthy insights | ✅ | LLM-powered, returns 0-5 candidates |
-| D2 | `/zk` Claude Code command — manual save | ✅ | Works in any session |
-| D3 | `/zk-scan` Claude Code command — batch scan + select | ✅ | Scan conversation, approve/reject each |
-| D4 | End-of-day scan integration | ✅ | Can be hooked into any CLI workflow |
-| D5 | Multi-provider LLM support | ✅ | `llm.py` — OpenAI, Anthropic, Google Gemini, OpenRouter, Ollama |
-
-### Phase 3 — Multi-destination (✅ core complete)
-
-Pluggable storage backends via `NoteStorage` protocol.
-
-| # | Task | Status | Notes |
-|---|------|--------|-------|
-| S1 | `storage.py` — storage interface + backend selector | ✅ | `STORAGE` env var |
-| S2 | `storage_heptabase.py` — Heptabase backend | ✅ | Default, MCP-based |
-| S3 | `storage_obsidian.py` — Obsidian backend | ✅ | Local .md files |
-
-## Key Technical Decisions
-
-### Classifier: LLM API (not rules)
-
-ZK note types have fuzzy boundaries that need semantic understanding. Any OpenAI-compatible LLM works. The prompt lives in `classifier.py` and can be tuned without changing architecture. Provider configured via `zk-agent init`, `~/.zk-agent/config.json`, or `.env`.
+ZK note types have fuzzy boundaries that need semantic understanding. Any OpenAI-compatible LLM works. The prompt in `classifier.py` uses few-shot examples (EN + ZH) with explicit boundary rules, and shares type definitions with the detector via `note_types.py` to ensure consistent classification across stages. Provider configured via `zk-agent init`, `~/.zk-agent/config.json`, or `.env`.
 
 ### MCP: Direct Python SDK connection
 
@@ -99,6 +52,10 @@ The Python MCP SDK connects directly to Heptabase using self-managed OAuth token
 ### Note routing: fleeting → daily note, literature/permanent → card
 
 One conversation can easily produce 4+ insights. Creating a card for each floods the note app. Fleeting notes (raw thoughts, questions, todos) go to the daily note under a dedicated section. Only literature and permanent notes — which represent developed ideas — become cards.
+
+### Shared type definitions
+
+Detector and classifier both reference `note_types.py` for type definitions and boundary rules. This eliminates classification drift between the "find insights" and "classify insight" stages — when two LLM prompts need to agree on categorization, they must share the same criteria text.
 
 ### Types: Python TypedDict
 
@@ -115,13 +72,51 @@ class NoteMetadata(TypedDict):
     related_notes: list[str]
 ```
 
-## Risk Register
+## Implementation Status
 
-| Risk | Severity | Status |
-|------|----------|--------|
-| Heptabase OAuth token expiry | Medium | Token has 48h TTL, no refresh token. Re-auth on expiry. |
-| MCP SDK OAuth resource validation bug | Low | Fixed in SDK >=1.27.0, pinned in requirements |
-| Classification accuracy (zh/en mixed) | Low | 100% on current fixtures |
+### Phase 1 — MVP (complete)
+
+Manual trigger mode: user provides text, agent classifies + saves.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| T1 | Heptabase MCP setup + self-contained OAuth | Done | `zk-agent setup` triggers browser OAuth |
+| T2 | `classifier.py` — ZK classification via LLM | Done | 100% accuracy on 12 fixtures (EN + ZH, few-shot prompt) |
+| T3 | `metadata_generator.py` — title + tags generation | Done | Same-language titles via LLM |
+| T4 | Semantic search for related notes | Done | Integrated in storage backends |
+| T5 | Full pipeline | Done | Fleeting → daily note, lit/perm → card |
+| T6 | Note formatting | Done | Markdown card format in `_format_card()` |
+| T7 | Fleeting note routing | Done | Appends under `## 🧠 ZK Fleeting Notes` section |
+| T8 | Tests | Done | 26 pass (12 classifier fixtures + 7 detector + 6 parse/validation + 1 structure) |
+| T9 | Packaging | Done | `pyproject.toml` + `pip install` + CLI entry point |
+
+### Phase 2 — Auto-detect (complete)
+
+Scan conversations for insights worth saving, present candidates for approval.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| D1 | `detector.py` — scan conversation for ZK-worthy insights | Done | LLM-powered, returns 0-5 candidates |
+| D2 | Multi-provider LLM support | Done | OpenAI, Anthropic, Google Gemini, OpenRouter, Ollama |
+
+> **AI tool integration:** The detector is designed to be called from any AI assistant or script. For example, Claude Code users can integrate it as a custom command to scan conversations and selectively save insights.
+
+### Phase 3 — Multi-destination (complete)
+
+Pluggable storage backends via `NoteStorage` protocol.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| S1 | `storage.py` — storage interface + backend selector | Done | `STORAGE` env var |
+| S2 | `storage_heptabase.py` — Heptabase backend | Done | Default, MCP-based |
+| S3 | `storage_obsidian.py` — Obsidian backend | Done | Local .md files |
+
+## Known Limitations
+
+| Item | Details |
+|------|---------|
+| Heptabase OAuth token expiry | Token has 48h TTL, no refresh token. Re-auth via `zk-agent setup` on expiry. |
+| No Heptabase tag API | MCP doesn't expose tag management. Note type indicated as `#hashtag` in card content (plain text, not native tags). |
 
 ## Example Interactions
 
@@ -147,28 +142,4 @@ $ zk-agent "Maybe use webhooks for real-time notifications? Need to research."
    Tags: #webhook, #real-time, #research
    Confidence: 95%
    Reasoning: Unprocessed idea with open question, needs further exploration
-```
-
-### Auto-detect scan
-
-```
-Via /zk-scan in Claude Code:
-
-📝 Insight 1/2: permanent
-「Systematic insight capture from AI conversations is a universal pain point — not limited to any specific tool's users.」
-Reason: Original synthesis about a universal problem pattern
-
-存嗎？ (y/n)
-> y
-✅ Saved as permanent note
-
-📝 Insight 2/2: fleeting
-「Maybe use webhooks for real-time notifications?」
-Reason: Unprocessed idea, needs research
-
-存嗎？ (y/n)
-> y
-📝 Fleeting note → saved
-
-Summary: 2 saved (1 card, 1 daily note)
 ```
